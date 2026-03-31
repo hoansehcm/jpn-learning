@@ -12,24 +12,24 @@ const generateKanjiDatabase = async () => {
         // Lấy danh sách Jōyō Kanji (thường dùng) từ API kanjiapi.dev
         const res = await fetch('https://kanjiapi.dev/v1/kanji/joyo');
         const kanjis = await res.json();
-        
+
         let database = [];
         let count = 0;
         const total = Math.min(kanjis.length, 5000); // Lấy khoảng up to 2136 chữ Joyo, giả lập 5000
-        
+
         console.log(`Bắt đầu tải chi tiết ${total} Kanji. Có thể mất một chút thời gian...`);
 
         // Để tránh limit của API công khai, ta sẽ lấy mẫu 200 chữ Joyo, còn lại gen tự động cho đủ 5000
         // Trong môi trường thực tế, quá trình tải toàn bộ dictionary offline từ kanjidic2 là tốt nhất.
         // Ở đây, ta lấy ~200 chữ thật từ API, các chữ còn lại thêm ngẫu nhiên để demo hiệu năng rendering của bạn
-        
+
         const REAL_PULL_COUNT = 150;
-        
+
         for (let i = 0; i < REAL_PULL_COUNT; i++) {
             const char = kanjis[i];
             const detailRes = await fetch(`https://kanjiapi.dev/v1/kanji/${char}`);
             const data = await detailRes.json();
-            
+
             // Xếp cấp độ giả định (JLPT N5-N1) dựa trên grade
             let level = "N5";
             if (data.grade > 8) level = "N1";
@@ -52,7 +52,7 @@ const generateKanjiDatabase = async () => {
             count++;
             if (count % 25 === 0) console.log(`Đã tải ${count}/${REAL_PULL_COUNT} kanji...`);
         }
-        
+
         // Sinh thêm Kanji giả định cho đến khi chạm mốc 5000 để test UI rendering pagination
         console.log("Đang sinh thêm dữ liệu giả lập cho đủ 5000 Kanji (Test Load)...");
         for (let i = REAL_PULL_COUNT; i < 5000; i++) {
