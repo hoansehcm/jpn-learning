@@ -1,215 +1,347 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { Mic, Play, Square, ArrowLeft, Volume2, CheckCircle, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
-
-const lessonData = {
-  id: 'l1',
-  title: 'Bài 1: Chào hỏi và Giới thiệu bản thân',
-  level: 'A1 (N5)',
-  canDo: 'Có thể chào hỏi cơ bản và giới thiệu tên, quốc tịch, nghề nghiệp.',
-  dialogues: [
-    {
-      id: 1,
-      speaker: 'Tanaka',
-      text: 'はじめまして。田中です。',
-      romaji: 'Hajimemashite. Tanaka desu.',
-      translation: 'Rất vui được gặp bạn. Tôi là Tanaka.',
-      audioUrl: '#', // Placeholder
-    },
-    {
-      id: 2,
-      speaker: 'Maria',
-      text: 'はじめまして。マリアです。フィリピンから来ました。',
-      romaji: 'Hajimemashite. Maria desu. Firipin kara kimashita.',
-      translation: 'Rất vui được gặp bạn. Tôi là Maria. Tôi đến từ Philippines.',
-      audioUrl: '#',
-    },
-    {
-      id: 3,
-      speaker: 'Tanaka',
-      text: 'どうぞよろしくお願いします。',
-      romaji: 'Douzo yoroshiku onegaishimasu.',
-      translation: 'Rất mong được giúp đỡ.',
-      audioUrl: '#',
-    },
-    {
-      id: 4,
-      speaker: 'Maria',
-      text: 'よろしくお願いします。',
-      romaji: 'Yoroshiku onegaishimasu.',
-      translation: 'Rất mong được giúp đỡ.',
-      audioUrl: '#',
-    }
-  ]
-};
+import { useEffect, useRef, useState } from 'react';
+import { useParams } from 'next/navigation';
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookOpen,
+  CheckCircle,
+  Mic,
+  Play,
+  RefreshCw,
+  Square,
+  Volume2,
+} from 'lucide-react';
+import { marugotoLessons, marugotoLevels } from '../../../lib/marugotoData';
 
 export default function SpeakingLessonPage() {
   const params = useParams();
-  const router = useRouter();
-  const [isRecording, setIsRecording] = useState(false);
-  const [activeDialogue, setActiveDialogue] = useState<number | null>(null);
-  const [recordedAudio, setRecordedAudio] = useState<Record<number, string>>({});
-  
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
+  const lessonId = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
-  const startRecording = async (dialogueId: number) => {
+  const lesson = marugotoLessons.find((item) => item.id === lessonId);
+  const level = marugotoLevels.find((item) => item.id === lesson?.levelId);
+  const levelLessons = lesson ? marugotoLessons.filter((item) => item.levelId === lesson.levelId) : [];
+  const currentIndex = lesson ? levelLessons.findIndex((item) => item.id === lesson.id) : -1;
+  const previousLesson = currentIndex > 0 ? levelLessons[currentIndex - 1] : null;
+  const nextLesson = currentIndex >= 0 && currentIndex < levelLessons.length - 1 ? levelLessons[currentIndex + 1] : null;
+
+  const [isRecording, setIsRecording] = useState(false);
+  const [activeSentence, setActiveSentence] = useState<number | null>(null);
+  const [recordedAudio, setRecordedAudio] = useState<Record<number, string>>({});
+
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordedAudioRef = useRef<Record<number, string>>({});
+
+  useEffect(() => {
+    return () => {
+      Object.values(recordedAudioRef.current).forEach((url) => URL.revokeObjectURL(url));
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+    };
+  }, []);
+
+  const playTTS = (text: string) => {
+    if (!('speechSynthesis' in window)) {
+      alert('Trình duyệt của bạn chưa hỗ trợ đọc tiếng Nhật.');
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ja-JP';
+    utterance.rate = 0.88;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const startRecording = async (sentenceIndex: number) => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
+      const recorder = new MediaRecorder(stream);
+
+      streamRef.current = stream;
+      mediaRecorderRef.current = recorder;
       audioChunksRef.current = [];
 
-      mediaRecorder.ondataavailable = (event) => {
+      recorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
         }
       };
 
-      mediaRecorder.onstop = () => {
+      recorder.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         const audioUrl = URL.createObjectURL(audioBlob);
-        setRecordedAudio(prev => ({ ...prev, [dialogueId]: audioUrl }));
-        
-        // Stop all tracks to release microphone
-        stream.getTracks().forEach(track => track.stop());
+
+        setRecordedAudio((previous) => {
+          if (previous[sentenceIndex]) {
+            URL.revokeObjectURL(previous[sentenceIndex]);
+          }
+
+          const nextAudio = {
+            ...previous,
+            [sentenceIndex]: audioUrl,
+          };
+
+          recordedAudioRef.current = nextAudio;
+          return nextAudio;
+        });
+
+        stream.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
       };
 
-      mediaRecorder.start();
+      recorder.start();
       setIsRecording(true);
-      setActiveDialogue(dialogueId);
+      setActiveSentence(sentenceIndex);
     } catch (error) {
-      console.error('Error accessing microphone:', error);
-      alert('Không thể truy cập microphone. Vui lòng kiểm tra quyền truy cập.');
+      console.error('Microphone error', error);
+      alert('Không thể truy cập micro. Hãy kiểm tra quyền truy cập rồi thử lại.');
     }
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      setActiveDialogue(null);
+    if (!mediaRecorderRef.current || !isRecording) {
+      return;
     }
+
+    mediaRecorderRef.current.stop();
+    setIsRecording(false);
+    setActiveSentence(null);
   };
 
   const playAudio = (url: string) => {
-    if (url === '#') {
-      alert('Audio mẫu chưa có sẵn.');
-      return;
-    }
     const audio = new Audio(url);
-    audio.play();
+    audio.play().catch((error) => console.error('Audio playback error', error));
   };
 
-  return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <Link href="/speaking" className="inline-flex items-center text-indigo-600 hover:text-indigo-800 mb-6 font-sans font-medium">
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Quay lại danh sách bài học
-      </Link>
-
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-8 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-2 h-full bg-indigo-500"></div>
-        <div className="flex justify-between items-start mb-4">
-          <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-800 text-sm font-semibold rounded-full font-mono">
-            {lessonData.level}
-          </span>
+  if (!lesson || !level) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="surface-card rounded-[34px] p-8 text-center">
+          <p className="font-serif text-3xl font-bold">Không tìm thấy bài Marugoto này</p>
+          <p className="mt-3 text-soft">Bài có thể đã bị đổi id hoặc chưa được tạo trong curriculum hiện tại.</p>
+          <Link
+            href="/speaking"
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-5 py-3 font-semibold text-[var(--accent-ink)]"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Quay lại lộ trình Marugoto
+          </Link>
         </div>
-        <h1 className="text-3xl font-serif font-bold text-[#2c2c2c] mb-4">
-          {lessonData.title}
-        </h1>
-        <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
-          <p className="text-sm text-indigo-800 font-sans font-medium mb-1">Mục tiêu Can-do:</p>
-          <p className="text-lg text-indigo-900 italic font-serif">
-            &quot;{lessonData.canDo}&quot;
-          </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link href="/speaking" className="inline-flex items-center gap-2 rounded-full soft-pill px-4 py-2 text-sm font-medium text-soft">
+          <ArrowLeft className="h-4 w-4" />
+          Quay lại lộ trình Marugoto
+        </Link>
+
+        <div className="flex flex-wrap gap-2">
+          {previousLesson && (
+            <Link href={`/speaking/${previousLesson.id}`} className="inline-flex items-center gap-2 rounded-full soft-pill px-4 py-2 text-sm font-medium text-soft">
+              <ArrowLeft className="h-4 w-4" />
+              {previousLesson.lesson}
+            </Link>
+          )}
+          {nextLesson && (
+            <Link href={`/speaking/${nextLesson.id}`} className="inline-flex items-center gap-2 rounded-full soft-pill px-4 py-2 text-sm font-medium text-soft">
+              {nextLesson.lesson}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
         </div>
       </div>
 
-      <div className="space-y-6">
-        <h2 className="text-2xl font-serif font-bold text-[#2c2c2c] mb-4 flex items-center">
-          <Volume2 className="mr-2 h-6 w-6 text-indigo-600" />
-          Hội thoại mẫu
-        </h2>
-        
-        {lessonData.dialogues.map((dialogue) => (
-          <div key={dialogue.id} className="paper-card relative">
-            <div className="flex flex-col md:flex-row gap-6">
-              <div className="flex-grow">
-                <div className="flex items-center mb-2">
-                  <span className="font-bold text-gray-700 bg-gray-100 px-3 py-1 rounded-full text-sm mr-3">
-                    {dialogue.speaker}
-                  </span>
-                  <button 
-                    onClick={() => playAudio(dialogue.audioUrl)}
-                    className="text-indigo-600 hover:text-indigo-800 p-1 rounded-full hover:bg-indigo-50 transition-colors"
-                    title="Nghe mẫu"
-                  >
-                    <Volume2 className="h-5 w-5" />
-                  </button>
-                </div>
-                
-                <p className="text-2xl font-medium text-[#2c2c2c] mb-2 leading-relaxed">
-                  {dialogue.text}
-                </p>
-                <p className="text-gray-500 font-mono text-sm mb-2">
-                  {dialogue.romaji}
-                </p>
-                <p className="text-gray-600 font-sans italic border-l-2 border-gray-300 pl-3">
-                  {dialogue.translation}
-                </p>
+      <section className={`mt-5 overflow-hidden rounded-[40px] border border-white/70 bg-gradient-to-br ${level.gradientClass} p-6 shadow-sm sm:p-8 lg:p-10`}>
+        <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${level.badgeClass}`}>{level.label}</span>
+              <span className="rounded-full border border-white/70 bg-white/70 px-3 py-1 text-xs font-semibold text-slate-700">{lesson.lesson}</span>
+              <span className="rounded-full border border-white/70 bg-white/70 px-3 py-1 text-xs font-semibold text-slate-700">{lesson.duration}</span>
+            </div>
+
+            <h1 className="mt-4 font-serif text-4xl font-bold text-slate-900 sm:text-5xl">{lesson.title}</h1>
+            <p className="mt-4 max-w-3xl text-base leading-7 text-slate-700">{lesson.canDo}</p>
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <div className="rounded-[26px] bg-white/75 p-5 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Focus</p>
+                <p className="mt-3 text-sm leading-6 text-slate-700">{lesson.focus}</p>
               </div>
-              
-              <div className="flex flex-col items-center justify-center min-w-[120px] border-t md:border-t-0 md:border-l border-gray-200 pt-4 md:pt-0 md:pl-6 border-dashed">
-                {isRecording && activeDialogue === dialogue.id ? (
-                  <button 
-                    onClick={stopRecording}
-                    className="flex flex-col items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition-colors animate-pulse"
-                  >
-                    <Square className="h-6 w-6 mb-1" fill="currentColor" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Dừng</span>
-                  </button>
-                ) : (
-                  <button 
-                    onClick={() => startRecording(dialogue.id)}
-                    disabled={isRecording}
-                    className={`flex flex-col items-center justify-center w-16 h-16 rounded-full transition-colors ${
-                      isRecording ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200'
-                    }`}
-                  >
-                    <Mic className="h-6 w-6 mb-1" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Ghi âm</span>
-                  </button>
-                )}
-                
-                {recordedAudio[dialogue.id] && (
-                  <div className="mt-4 flex flex-col items-center w-full">
-                    <button 
-                      onClick={() => playAudio(recordedAudio[dialogue.id])}
-                      className="flex items-center justify-center w-full py-2 px-3 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium mb-2"
-                    >
-                      <Play className="h-4 w-4 mr-1" fill="currentColor" />
-                      Nghe lại
-                    </button>
-                    <div className="flex items-center text-green-600 text-xs font-medium">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Đã ghi âm
-                    </div>
-                  </div>
-                )}
+              <div className="rounded-[26px] bg-white/75 p-5 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Culture Note</p>
+                <p className="mt-3 text-sm leading-6 text-slate-700">{lesson.cultureNote}</p>
               </div>
             </div>
           </div>
-        ))}
-      </div>
-      
-      <div className="mt-12 flex justify-center">
-        <button className="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all duration-200">
-          Hoàn thành bài học
-        </button>
+
+          <div className="surface-panel rounded-[30px] p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-soft">Mở bài nhanh</p>
+            <p className="mt-3 font-serif text-3xl">{lesson.sentences[0].ja}</p>
+            <p className="mt-2 text-sm font-medium text-emerald-700">{lesson.sentences[0].romaji}</p>
+            <p className="mt-2 text-sm leading-6 text-soft">{lesson.sentences[0].vi}</p>
+
+            <div className="mt-5 flex flex-wrap gap-3">
+              <button
+                onClick={() => playTTS(lesson.sentences[0].ja)}
+                className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--accent-ink)]"
+              >
+                <Volume2 className="h-4 w-4" />
+                Nghe câu mẫu
+              </button>
+              <button
+                onClick={() => playTTS(lesson.sentences.map((item) => item.ja).join(' '))}
+                className="inline-flex items-center gap-2 rounded-full soft-pill px-4 py-2.5 text-sm font-medium text-soft"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Nghe liên tục
+              </button>
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              {lesson.topics.map((topic) => (
+                <span key={topic} className="rounded-full bg-black/5 px-3 py-1.5 text-xs font-medium text-soft">
+                  {topic}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="mt-8 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+        <section className="space-y-5">
+          <div className="surface-panel rounded-[34px] p-5 sm:p-6">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-soft">Hội thoại mẫu</p>
+                <h2 className="mt-2 font-serif text-3xl font-bold">Nghe, nhại lại, rồi tự ghi âm</h2>
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">
+                <Mic className="h-4 w-4" />
+                {lesson.sentences.length} câu luyện nói
+              </div>
+            </div>
+          </div>
+
+          {lesson.sentences.map((item, index) => (
+            <article key={`${lesson.id}-${index}`} className="surface-card rounded-[30px] p-5 sm:p-6">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="rounded-full bg-[var(--surface-muted)] px-3 py-1 text-sm font-semibold">{item.speaker}</span>
+                    <span className="rounded-full bg-black/5 px-3 py-1 text-xs font-semibold text-soft">Câu {index + 1}</span>
+                  </div>
+
+                  <p className="mt-4 font-serif text-3xl leading-tight">{item.ja}</p>
+                  <p className="mt-3 text-sm font-medium text-emerald-700">{item.romaji}</p>
+                  <p className="mt-3 text-sm leading-7 text-soft">{item.vi}</p>
+                </div>
+
+                <div className="grid w-full gap-3 sm:max-w-[240px]">
+                  <button
+                    onClick={() => playTTS(item.ja)}
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-[var(--accent-ink)]"
+                  >
+                    <Volume2 className="h-4 w-4" />
+                    Nghe mẫu
+                  </button>
+
+                  {isRecording && activeSentence === index ? (
+                    <button
+                      onClick={stopRecording}
+                      className="inline-flex items-center justify-center gap-2 rounded-full bg-rose-100 px-4 py-3 text-sm font-semibold text-rose-700"
+                    >
+                      <Square className="h-4 w-4" />
+                      Dừng ghi âm
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => startRecording(index)}
+                      disabled={isRecording}
+                      className={`inline-flex items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-semibold ${
+                        isRecording ? 'bg-black/5 text-soft' : 'soft-pill text-soft'
+                      }`}
+                    >
+                      <Mic className="h-4 w-4" />
+                      Ghi âm thử
+                    </button>
+                  )}
+
+                  {recordedAudio[index] && (
+                    <button
+                      onClick={() => playAudio(recordedAudio[index])}
+                      className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700"
+                    >
+                      <Play className="h-4 w-4" />
+                      Nghe lại bản ghi
+                    </button>
+                  )}
+                </div>
+              </div>
+            </article>
+          ))}
+        </section>
+
+        <aside className="space-y-5">
+          <section className="surface-card rounded-[30px] p-5 sm:p-6">
+            <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-soft">
+              <BookOpen className="h-4 w-4" />
+              Từ vựng lõi
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {lesson.vocabulary.map((item) => (
+                <span key={item} className="rounded-full bg-black/5 px-3 py-1.5 text-sm font-medium">
+                  {item}
+                </span>
+              ))}
+            </div>
+          </section>
+
+          <section className="surface-card rounded-[30px] p-5 sm:p-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-soft">Mẫu ngữ pháp gợi ý</p>
+            <div className="mt-4 space-y-3">
+              {lesson.grammar.map((item) => (
+                <div key={item} className="rounded-[20px] bg-black/5 px-4 py-3 text-sm font-medium">
+                  {item}
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="surface-card rounded-[30px] p-5 sm:p-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-soft">Bài luyện nói nhỏ</p>
+            <div className="mt-4 space-y-4">
+              {lesson.prompts.map((item) => (
+                <div key={item.title} className="rounded-[22px] bg-[var(--surface-muted)]/80 p-4">
+                  <p className="font-semibold">{item.title}</p>
+                  <p className="mt-2 text-sm leading-6 text-soft">{item.instruction}</p>
+                  <p className="mt-2 text-sm font-medium text-emerald-700">{item.support}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="surface-card rounded-[30px] p-5 sm:p-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-soft">Checklist sau khi học</p>
+            <div className="mt-4 space-y-3">
+              {lesson.reviewChecklist.map((item) => (
+                <div key={item} className="flex items-start gap-3 rounded-[20px] bg-black/5 p-4">
+                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600" />
+                  <p className="text-sm leading-6">{item}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        </aside>
       </div>
     </div>
   );
