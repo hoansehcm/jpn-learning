@@ -9,7 +9,7 @@ import { jlptLevels } from '../../lib/sampleData';
 export default function KanjiList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('All');
-  const [kanjis, setKanjis] = useState([]);
+  const [kanjis, setKanjis] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(40);
   

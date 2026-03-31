@@ -6,9 +6,9 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function SpeakingPage() {
-  const [lessons, setLessons] = useState([]);
+  const [lessons, setLessons] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedId, setExpandedId] = useState(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/data/marugoto_speaking.json')
@@ -23,11 +23,11 @@ export default function SpeakingPage() {
       });
   }, []);
 
-  const toggleExpand = (id) => {
+  const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
-  const playTTS = (text) => {
+  const playTTS = (text: string) => {
     if ('speechSynthesis' in window) {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'ja-JP';
@@ -88,7 +88,7 @@ export default function SpeakingPage() {
                 </h3>
 
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {lesson.topics.map((topic, idx) => (
+                  {lesson.topics.map((topic: string, idx: number) => (
                     <span key={idx} className="text-xs font-medium bg-secondary text-secondary-foreground px-3 py-1.5 rounded-xl">
                       {topic}
                     </span>
@@ -107,7 +107,7 @@ export default function SpeakingPage() {
                     className="border-t border-border bg-secondary/30"
                   >
                     <div className="p-6 space-y-4">
-                      {lesson.sentences.map((sentence, idx) => (
+                      {lesson.sentences.map((sentence: any, idx: number) => (
                         <div key={idx} className="bg-background border border-border rounded-2xl p-4 flex gap-4 items-start shadow-sm">
                           <button 
                             onClick={(e) => {
