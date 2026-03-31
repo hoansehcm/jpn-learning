@@ -11,6 +11,22 @@ export interface MarugotoPracticePrompt {
   support: string;
 }
 
+export interface MarugotoKnowledgeBlock {
+  title: string;
+  description: string;
+}
+
+export interface MarugotoGrammarNote {
+  pattern: string;
+  explanation: string;
+  speakingTip: string;
+}
+
+export interface MarugotoSelfStudyTask {
+  title: string;
+  instruction: string;
+}
+
 export interface MarugotoLesson {
   id: string;
   levelId: string;
@@ -28,6 +44,10 @@ export interface MarugotoLesson {
   prompts: MarugotoPracticePrompt[];
   cultureNote: string;
   reviewChecklist: string[];
+  knowledgeBlocks: MarugotoKnowledgeBlock[];
+  grammarNotes: MarugotoGrammarNote[];
+  selfStudyTasks: MarugotoSelfStudyTask[];
+  shadowingSteps: string[];
 }
 
 export interface MarugotoLevel {
@@ -55,6 +75,191 @@ const prompt = (title: string, instruction: string, support: string): MarugotoPr
   instruction,
   support,
 });
+
+const grammarGuide: Record<string, { explanation: string; speakingTip: string }> = {
+  'です': {
+    explanation: 'Mẫu khẳng định cơ bản dùng để giới thiệu hoặc mô tả ngắn gọn, lịch sự.',
+    speakingTip: 'Hãy dùng để nói rõ thông tin cá nhân như tên, nghề nghiệp hoặc tình trạng hiện tại.',
+  },
+  'ます': {
+    explanation: 'Đuôi lịch sự cho động từ, thường dùng trong các đoạn hội thoại chuẩn mực hằng ngày.',
+    speakingTip: 'Khi luyện nói, hãy ghép 3 động từ ます liên tiếp để kể thói quen trong ngày.',
+  },
+  'がいます': {
+    explanation: 'Dùng để nói có người hoặc động vật tồn tại trong một nhóm hay không gian.',
+    speakingTip: 'Phù hợp khi giới thiệu gia đình, bạn bè hoặc người quen.',
+  },
+  'が好きです': {
+    explanation: 'Mẫu bày tỏ sở thích hoặc điều mình yêu thích.',
+    speakingTip: 'Nên nói thêm một lý do ngắn sau câu này để đoạn hội thoại tự nhiên hơn.',
+  },
+  'に': {
+    explanation: 'Trợ từ chỉ thời điểm, đích đến hoặc vị trí tùy ngữ cảnh.',
+    speakingTip: 'Ở các bài đầu, hãy ưu tiên luyện với giờ giấc và địa điểm cụ thể.',
+  },
+  'から ... まで': {
+    explanation: 'Dùng để chỉ khoảng thời gian hoặc quãng đường từ đâu đến đâu.',
+    speakingTip: 'Rất hợp để kể lịch học, lịch làm việc hoặc giờ mở cửa.',
+  },
+  'をください': {
+    explanation: 'Mẫu gọi món hoặc yêu cầu đưa cho mình một vật gì đó.',
+    speakingTip: 'Giữ giọng điệu gọn và rõ để nghe tự nhiên như trong nhà hàng.',
+  },
+  'ませんか': {
+    explanation: 'Mẫu lời mời lịch sự, nhẹ nhàng và thân thiện.',
+    speakingTip: 'Sau khi mời, nên chuẩn bị thêm câu hỏi về thời gian hoặc địa điểm gặp.',
+  },
+  'ています': {
+    explanation: 'Diễn tả hành động đang diễn ra hoặc trạng thái kéo dài.',
+    speakingTip: 'Dùng rất tốt khi kể công việc thường nhật hoặc tình trạng hiện tại.',
+  },
+  'ので': {
+    explanation: 'Liên kết lý do và kết quả với sắc thái mềm hơn so với から.',
+    speakingTip: 'Hữu ích khi giải thích hoàn cảnh hoặc nhờ hỗ trợ một cách lịch sự.',
+  },
+  'と思います': {
+    explanation: 'Mẫu nêu ý kiến hoặc cảm nhận cá nhân mà không quá áp đặt.',
+    speakingTip: 'Rất hợp khi bạn cần bày tỏ góc nhìn về thời tiết, địa phương hay lựa chọn cá nhân.',
+  },
+  'たり ... たり': {
+    explanation: 'Liệt kê vài hoạt động tiêu biểu thay vì kể toàn bộ mọi việc.',
+    speakingTip: 'Khi nói về cuối tuần hoặc sở thích, mẫu này giúp câu nói nghe tự nhiên hơn.',
+  },
+  'たいです': {
+    explanation: 'Diễn tả mong muốn muốn làm điều gì đó.',
+    speakingTip: 'Hãy ghép với một thời gian hoặc lý do để câu nói giàu thông tin hơn.',
+  },
+  'たほうがいい': {
+    explanation: 'Mẫu đưa lời khuyên hoặc đề xuất điều nên làm.',
+    speakingTip: 'Dùng giọng điệu nhẹ để lời khuyên nghe thân thiện, không áp đặt.',
+  },
+  'つもりです': {
+    explanation: 'Thể hiện kế hoạch hoặc ý định đã tương đối rõ.',
+    speakingTip: 'Rất hữu ích khi nói về lịch du lịch, mục tiêu học tập hoặc kế hoạch tương lai.',
+  },
+  'ていただけますか': {
+    explanation: 'Mẫu nhờ vả lịch sự và trang trọng hơn.',
+    speakingTip: 'Dùng tốt trong khách sạn, dịch vụ hoặc khi cần hỗ trợ từ người lạ.',
+  },
+  'ことができます': {
+    explanation: 'Diễn tả khả năng có thể làm gì hoặc điều gì có thể thực hiện được.',
+    speakingTip: 'Hay dùng khi giới thiệu địa điểm, hoạt động hoặc tiện ích.',
+  },
+  'ながら': {
+    explanation: 'Diễn tả hai hành động diễn ra song song.',
+    speakingTip: 'Khi kể trải nghiệm, mẫu này giúp câu nói sinh động và tự nhiên hơn.',
+  },
+  'てから': {
+    explanation: 'Chỉ thứ tự sau khi làm xong việc thứ nhất thì đến việc thứ hai.',
+    speakingTip: 'Hợp để kể thay đổi trong cuộc sống hoặc quy trình từng bước.',
+  },
+  'ようになりました': {
+    explanation: 'Diễn tả sự thay đổi trong khả năng hoặc thói quen theo thời gian.',
+    speakingTip: 'Đây là mẫu rất mạnh để nói về tiến bộ học tập hoặc thói quen mới.',
+  },
+  'かもしれません': {
+    explanation: 'Mẫu phỏng đoán mềm, thể hiện chưa khẳng định tuyệt đối.',
+    speakingTip: 'Dùng khi góp ý, dự đoán hoặc nêu khả năng để giữ sắc thái lịch sự.',
+  },
+  'について': {
+    explanation: 'Nêu chủ đề hoặc lĩnh vực mình đang nói đến.',
+    speakingTip: 'Rất phù hợp cho email, blog, thuyết trình và giới thiệu chủ đề.',
+  },
+  'ために': {
+    explanation: 'Chỉ mục đích hoặc lý do hướng đến một kết quả.',
+    speakingTip: 'Hãy ghép với mục tiêu cá nhân để câu nói có định hướng rõ ràng.',
+  },
+  'につれて': {
+    explanation: 'Diễn tả một thay đổi kéo theo một thay đổi khác.',
+    speakingTip: 'Rất hữu ích khi mô tả tiến bộ dần dần của bản thân.',
+  },
+  '一方で': {
+    explanation: 'Dùng để đưa ra mặt còn lại hoặc một góc nhìn đối chiếu.',
+    speakingTip: 'Phù hợp khi so sánh lựa chọn, nêu hai mặt của một vấn đề hoặc phản biện mềm.',
+  },
+  'にとって': {
+    explanation: 'Chỉ góc nhìn “đối với ai đó” hoặc ý nghĩa với một cá nhân/nhóm người.',
+    speakingTip: 'Rất phù hợp khi nói về giá trị cá nhân, sở thích hoặc trải nghiệm.',
+  },
+  'によると': {
+    explanation: 'Dùng để dẫn nguồn thông tin theo ai hoặc theo đâu.',
+    speakingTip: 'Khi nói về tin tức, thêm nguồn sẽ làm bài nói đáng tin hơn.',
+  },
+  '申し訳ありませんが': {
+    explanation: 'Mở đầu một câu xin lỗi lịch sự, thường dùng trong ngữ cảnh dịch vụ.',
+    speakingTip: 'Sau mẫu này, hãy nói ngắn gọn và rõ ràng để xử lý tình huống mềm mại hơn.',
+  },
+  'べきだと思います': {
+    explanation: 'Nêu quan điểm rằng điều gì đó nên được thực hiện, nhưng vẫn giữ sắc thái cá nhân.',
+    speakingTip: 'Khi tranh luận, mẫu này cho phép bạn thuyết phục mà không quá cứng.',
+  },
+};
+
+const buildKnowledgeBlocks = (
+  canDo: string,
+  focus: string,
+  topics: string[],
+  cultureNote: string
+): MarugotoKnowledgeBlock[] => [
+  {
+    title: 'Can-do',
+    description: canDo,
+  },
+  {
+    title: 'Trọng tâm giao tiếp',
+    description: focus,
+  },
+  {
+    title: 'Tình huống sử dụng',
+    description: `Bài này phù hợp khi bạn cần nói về ${topics.join(', ')} trong ngữ cảnh đời sống hoặc học tập.`,
+  },
+  {
+    title: 'Lưu ý văn hóa',
+    description: cultureNote,
+  },
+];
+
+const buildGrammarNotes = (grammar: string[], title: string): MarugotoGrammarNote[] =>
+  grammar.map((pattern) => {
+    const guide = grammarGuide[pattern];
+
+    return {
+      pattern,
+      explanation: guide?.explanation ?? `Mẫu này là một phần trọng tâm giúp bạn triển khai nội dung trong bài "${title}".`,
+      speakingTip: guide?.speakingTip ?? `Hãy tự đặt một câu mới với mẫu ${pattern} rồi thay thông tin cá nhân của bạn vào câu đó.`,
+    };
+  });
+
+const buildSelfStudyTasks = (
+  title: string,
+  sentences: MarugotoSentence[],
+  prompts: MarugotoPracticePrompt[],
+  reviewChecklist: string[]
+): MarugotoSelfStudyTask[] => [
+  {
+    title: 'Shadowing 3 vòng',
+    instruction: `Nghe ${sentences.length} câu mẫu của bài "${title}" và nhại lại ít nhất 3 lần cho từng câu.`,
+  },
+  {
+    title: 'Biến câu mẫu thành câu của bạn',
+    instruction: `Lấy câu đầu "${sentences[0].ja}" rồi thay tên, nơi chốn hoặc thời gian để biến nó thành thông tin thật của bạn.`,
+  },
+  ...prompts.slice(0, 2).map((item) => ({
+    title: item.title,
+    instruction: item.instruction,
+  })),
+  {
+    title: 'Tự kiểm tra cuối bài',
+    instruction: `Sau khi luyện xong, hãy tự hỏi xem bạn đã làm được các ý sau chưa: ${reviewChecklist.join(' / ')}.`,
+  },
+].slice(0, 5);
+
+const buildShadowingSteps = (sentences: MarugotoSentence[], prompts: MarugotoPracticePrompt[]): string[] => [
+  `Nghe toàn bộ ${sentences.length} câu một lượt để nắm nhịp điệu và ngữ điệu.`,
+  'Dừng sau từng câu, nhại lại ít nhất 3 lần và cố gắng bắt chước tốc độ của mẫu.',
+  'Thay một thông tin cá nhân trong câu mẫu để biến nó thành câu của riêng bạn.',
+  `Hoàn thành ít nhất 1 bài luyện nói nhỏ trong phần prompts, ưu tiên "${prompts[0]?.title || 'bài luyện đầu tiên'}".`,
+];
 
 const createLesson = (
   levelId: string,
@@ -88,6 +293,10 @@ const createLesson = (
   prompts,
   cultureNote,
   reviewChecklist,
+  knowledgeBlocks: buildKnowledgeBlocks(canDo, focus, topics, cultureNote),
+  grammarNotes: buildGrammarNotes(grammar, title),
+  selfStudyTasks: buildSelfStudyTasks(title, sentences, prompts, reviewChecklist),
+  shadowingSteps: buildShadowingSteps(sentences, prompts),
 });
 
 export const marugotoLevels: MarugotoLevel[] = [

@@ -216,7 +216,10 @@ export default function SpeakingPage() {
                     <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
                       <div className="inline-flex items-center gap-2 text-sm text-soft">
                         <BookOpen className="h-4 w-4" />
-                        {lesson.prompts.length} bài luyện nói nhỏ
+                        {lesson.selfStudyTasks.length} khối tự học
+                      </div>
+                      <div className="text-sm text-soft">
+                        {lesson.grammarNotes.length} ngữ pháp • {lesson.vocabulary.length} từ khóa
                       </div>
                       <Link
                         href={`/speaking/${lesson.id}`}

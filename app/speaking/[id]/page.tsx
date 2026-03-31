@@ -217,17 +217,41 @@ export default function SpeakingLessonPage() {
         </div>
       </section>
 
+      <section className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {lesson.knowledgeBlocks.map((item) => (
+          <div key={item.title} className="surface-card rounded-[28px] p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-soft">{item.title}</p>
+            <p className="mt-3 text-sm leading-6">{item.description}</p>
+          </div>
+        ))}
+      </section>
+
       <div className="mt-8 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
         <section className="space-y-5">
           <div className="surface-panel rounded-[34px] p-5 sm:p-6">
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-col gap-4">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-soft">Hội thoại mẫu</p>
                 <h2 className="mt-2 font-serif text-3xl font-bold">Nghe, nhại lại, rồi tự ghi âm</h2>
               </div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">
-                <Mic className="h-4 w-4" />
-                {lesson.sentences.length} câu luyện nói
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">
+                  <Mic className="h-4 w-4" />
+                  {lesson.sentences.length} câu luyện nói
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-700">
+                  <BookOpen className="h-4 w-4" />
+                  {lesson.shadowingSteps.length} bước shadowing
+                </div>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                {lesson.shadowingSteps.map((item, index) => (
+                  <div key={item} className="rounded-[22px] bg-black/5 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-soft">Bước {index + 1}</p>
+                    <p className="mt-2 text-sm leading-6">{item}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -309,9 +333,23 @@ export default function SpeakingLessonPage() {
           <section className="surface-card rounded-[30px] p-5 sm:p-6">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-soft">Mẫu ngữ pháp gợi ý</p>
             <div className="mt-4 space-y-3">
-              {lesson.grammar.map((item) => (
-                <div key={item} className="rounded-[20px] bg-black/5 px-4 py-3 text-sm font-medium">
-                  {item}
+              {lesson.grammarNotes.map((item) => (
+                <div key={item.pattern} className="rounded-[22px] bg-black/5 p-4">
+                  <p className="text-sm font-semibold">{item.pattern}</p>
+                  <p className="mt-2 text-sm leading-6 text-soft">{item.explanation}</p>
+                  <p className="mt-2 text-sm font-medium text-emerald-700">{item.speakingTip}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="surface-card rounded-[30px] p-5 sm:p-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-soft">Tự học theo giáo trình</p>
+            <div className="mt-4 space-y-4">
+              {lesson.selfStudyTasks.map((item, index) => (
+                <div key={`${item.title}-${index}`} className="rounded-[22px] bg-[var(--surface-muted)]/80 p-4">
+                  <p className="font-semibold">{item.title}</p>
+                  <p className="mt-2 text-sm leading-6 text-soft">{item.instruction}</p>
                 </div>
               ))}
             </div>
