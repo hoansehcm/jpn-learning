@@ -73,8 +73,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (error: any) {
+      console.error('Lỗi đăng nhập:', error);
+      if (error.code === 'auth/unauthorized-domain') {
+        alert('Lỗi: Tên miền Vercel chưa được cấp phép. Vui lòng thêm tên miền này vào Firebase Console > Authentication > Settings > Authorized domains.');
+      } else {
+        alert('Đăng nhập thất bại: ' + error.message);
+      }
+    }
   };
 
   const logout = async () => {
