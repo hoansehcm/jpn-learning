@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { ArrowLeft, GraduationCap, Loader2 } from 'lucide-react';
+import KanjiStrokePlayer from '../../../components/KanjiStrokePlayer';
 
 interface RawKanjiItem {
   id: string;
@@ -128,6 +129,8 @@ export default function KanjiDetail() {
           </div>
 
           <div className="p-8 sm:p-10">
+            <KanjiStrokePlayer kanji={kanji.kanji} />
+
             <div className="flex items-center gap-3 mb-6">
               <div className="h-11 w-11 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-700">
                 <GraduationCap className="w-5 h-5" />
@@ -136,7 +139,7 @@ export default function KanjiDetail() {
             </div>
 
             {kanji.examples.length > 0 ? (
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-2 gap-4 mt-6">
                 {kanji.examples.map((example, index) => (
                   <div key={`${kanji.id}-${index}`} className="rounded-[28px] bg-black/5 p-5">
                     <p className="text-2xl font-semibold">{example.ja}</p>
@@ -145,7 +148,7 @@ export default function KanjiDetail() {
                 ))}
               </div>
             ) : (
-              <div className="rounded-[28px] bg-black/5 p-5 text-soft">
+              <div className="rounded-[28px] bg-black/5 p-5 text-soft mt-6">
                 Chưa có ví dụ cho chữ này.
               </div>
             )}
