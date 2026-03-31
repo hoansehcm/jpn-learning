@@ -11,26 +11,17 @@ export default function KanjiList() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('All');
-  const [kanjiList, setKanjiList] = useState(sampleKanji);
-
   const levels = ['All', 'N5', 'N4', 'N3', 'N2', 'N1'];
-
-  useEffect(() => {
-    let filtered = sampleKanji;
-    if (selectedLevel !== 'All') {
-      filtered = filtered.filter(k => k.level === selectedLevel);
-    }
-    if (searchTerm) {
-      const lower = searchTerm.toLowerCase();
-      filtered = filtered.filter(k => 
-        k.kanji.toLowerCase().includes(lower) || 
-        k.meaning.toLowerCase().includes(lower) ||
-        k.onyomi.toLowerCase().includes(lower) ||
-        k.kunyomi.toLowerCase().includes(lower)
-      );
-    }
-    setKanjiList(filtered);
-  }, [searchTerm, selectedLevel]);
+  const kanjiList = sampleKanji.filter(k => {
+    const matchesLevel = selectedLevel === 'All' || k.level === selectedLevel;
+    const lower = searchTerm.toLowerCase();
+    const matchesSearch = !searchTerm || 
+      k.kanji.toLowerCase().includes(lower) || 
+      k.meaning.toLowerCase().includes(lower) ||
+      k.onyomi.toLowerCase().includes(lower) ||
+      k.kunyomi.toLowerCase().includes(lower);
+    return matchesLevel && matchesSearch;
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 py-8">

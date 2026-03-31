@@ -4,9 +4,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { BookOpen, BrainCircuit, GraduationCap, Flame, Target, ChevronRight, PlayCircle, CalendarDays } from 'lucide-react';
+import { BookOpen, BrainCircuit, GraduationCap, Flame, Target, ChevronRight, PlayCircle, CalendarDays, BarChart2 } from 'lucide-react';
 import Link from 'next/link';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 export default function Dashboard() {
   const { user, userProfile, loading } = useAuth();
@@ -26,9 +26,14 @@ export default function Dashboard() {
     );
   }
 
-  const progressData = [
-    { name: 'Đã học', value: 120, color: '#4f46e5' },
-    { name: 'Chưa học', value: 880, color: '#e2e8f0' },
+  const weeklyData = [
+    { name: 'T2', words: 20, grammar: 5, kanji: 10 },
+    { name: 'T3', words: 25, grammar: 3, kanji: 15 },
+    { name: 'T4', words: 15, grammar: 8, kanji: 5 },
+    { name: 'T5', words: 30, grammar: 2, kanji: 20 },
+    { name: 'T6', words: 22, grammar: 6, kanji: 12 },
+    { name: 'T7', words: 40, grammar: 10, kanji: 25 },
+    { name: 'CN', words: 10, grammar: 0, kanji: 5 },
   ];
 
   const stats = [
@@ -114,7 +119,7 @@ export default function Dashboard() {
                 </Link>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                 {stats.map((stat, index) => (
                   <motion.div
                     key={index}
@@ -144,6 +149,54 @@ export default function Dashboard() {
                   </motion.div>
                 ))}
               </div>
+
+              {/* Weekly Chart */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm mb-8"
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
+                    <BarChart2 className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900">Hoạt động tuần này</h3>
+                    <p className="text-sm text-slate-500">Số lượng mục đã học mỗi ngày</p>
+                  </div>
+                </div>
+                
+                <div className="h-64 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={weeklyData}
+                      margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                      <XAxis 
+                        dataKey="name" 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{ fill: '#64748b', fontSize: 12 }} 
+                        dy={10}
+                      />
+                      <YAxis 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{ fill: '#64748b', fontSize: 12 }} 
+                      />
+                      <Tooltip 
+                        cursor={{ fill: '#f1f5f9' }}
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                      />
+                      <Bar dataKey="words" name="Từ vựng" stackId="a" fill="#4f46e5" radius={[0, 0, 4, 4]} />
+                      <Bar dataKey="grammar" name="Ngữ pháp" stackId="a" fill="#9333ea" />
+                      <Bar dataKey="kanji" name="Kanji" stackId="a" fill="#10b981" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </motion.div>
             </div>
 
             {/* Recommended Lessons */}

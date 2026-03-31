@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
-import { BookOpen, LogOut, User, Menu, X, BrainCircuit, GraduationCap, LayoutDashboard } from 'lucide-react';
+import { BookOpen, LogOut, User, Menu, X, BrainCircuit, GraduationCap, LayoutDashboard, Mic, Book } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import GlobalSearch from './GlobalSearch';
+import ThemeToggle from './ThemeToggle';
 
 export default function Navbar() {
   const { user, userProfile, signInWithGoogle, logout } = useAuth();
@@ -14,6 +16,8 @@ export default function Navbar() {
     { name: 'Từ vựng', href: '/vocabulary', icon: BookOpen },
     { name: 'Ngữ pháp', href: '/grammar', icon: BrainCircuit },
     { name: 'Kanji', href: '/kanji', icon: GraduationCap },
+    { name: 'Giao tiếp', href: '/speaking', icon: Mic },
+    { name: 'Sổ tay', href: '/notebooks', icon: Book },
     { name: 'Ôn tập', href: '/flashcards', icon: BrainCircuit },
     { name: 'Thi thử', href: '/quizzes', icon: BrainCircuit },
   ];
@@ -48,8 +52,10 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-4">
+          <ThemeToggle />
           {user ? (
             <div className="hidden md:flex items-center gap-4">
+              <GlobalSearch />
               <Link
                 href="/dashboard"
                 className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors flex items-center gap-2"
@@ -59,6 +65,11 @@ export default function Navbar() {
               </Link>
               <div className="h-6 w-px bg-slate-200"></div>
               <div className="flex items-center gap-3">
+                {userProfile?.role === 'admin' && (
+                  <Link href="/admin" className="text-sm font-medium text-amber-600 hover:text-amber-700 transition-colors">
+                    Admin
+                  </Link>
+                )}
                 <Link href="/profile" className="text-sm font-medium text-slate-700 hover:text-indigo-600 transition-colors">
                   {userProfile?.displayName || user.displayName}
                 </Link>
@@ -72,21 +83,24 @@ export default function Navbar() {
               </div>
             </div>
           ) : (
-            <button
-              onClick={signInWithGoogle}
+            <Link
+              href="/login"
               className="hidden md:flex items-center gap-2 bg-indigo-600 text-white px-5 py-2 rounded-full font-medium hover:bg-indigo-700 transition-colors shadow-sm"
             >
               <User className="w-4 h-4" />
               Đăng nhập
-            </button>
+            </Link>
           )}
 
-          <button
-            className="md:hidden p-2 text-slate-600"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          <div className="flex items-center gap-2 md:hidden">
+            <GlobalSearch />
+            <button
+              className="p-2 text-slate-600"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -114,6 +128,11 @@ export default function Navbar() {
                       <link.icon className="w-5 h-5 text-indigo-600" /> {link.name}
                     </Link>
                   ))}
+                  {userProfile?.role === 'admin' && (
+                    <Link href="/admin" className="flex items-center gap-3 p-3 rounded-lg hover:bg-amber-50 text-amber-700 font-medium" onClick={() => setIsMobileMenuOpen(false)}>
+                      <User className="w-5 h-5 text-amber-600" /> Quản trị hệ thống
+                    </Link>
+                  )}
                   <button
                     onClick={() => { logout(); setIsMobileMenuOpen(false); }}
                     className="flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 text-red-600 font-medium mt-2 border-t border-slate-100"
@@ -122,12 +141,13 @@ export default function Navbar() {
                   </button>
                 </>
               ) : (
-                <button
-                  onClick={() => { signInWithGoogle(); setIsMobileMenuOpen(false); }}
+                <Link
+                  href="/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-5 py-3 rounded-xl font-medium"
                 >
-                  <User className="w-5 h-5" /> Đăng nhập bằng Google
-                </button>
+                  <User className="w-5 h-5" /> Đăng nhập
+                </Link>
               )}
             </div>
           </motion.div>

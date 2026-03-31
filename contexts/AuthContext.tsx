@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth, db } from '../lib/firebase';
-import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 interface UserProfile {
@@ -22,6 +22,8 @@ interface AuthContextType {
   userProfile: UserProfile | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
+  signInWithEmail: (email: string, pass: string) => Promise<void>;
+  signUpWithEmail: (email: string, pass: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -30,6 +32,8 @@ const AuthContext = createContext<AuthContextType>({
   userProfile: null,
   loading: true,
   signInWithGoogle: async () => {},
+  signInWithEmail: async () => {},
+  signUpWithEmail: async () => {},
   logout: async () => {},
 });
 
@@ -86,12 +90,45 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const signInWithEmail = async (email: string, pass: string) => {
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } catch (error: any) {
+      console.error('Lỗi đăng nhập email:', error);
+      alert('Đăng nhập thất bại: ' + error.message);
+    }
+  };
+
+  const signUpWithEmail = async (email: string, pass: string, name: string) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+      const currentUser = userCredential.user;
+      const userRef = doc(db, 'users', currentUser.uid);
+      const newProfile: UserProfile = {
+        uid: currentUser.uid,
+        displayName: name || 'Learner',
+        email: currentUser.email || '',
+        photoURL: '',
+        targetLevel: 'N5',
+        dailyGoal: 20,
+        streak: 0,
+        lastStudyDate: new Date().toISOString(),
+        role: 'user',
+      };
+      await setDoc(userRef, newProfile);
+      setUserProfile(newProfile);
+    } catch (error: any) {
+      console.error('Lỗi đăng ký email:', error);
+      alert('Đăng ký thất bại: ' + error.message);
+    }
+  };
+
   const logout = async () => {
     await signOut(auth);
   };
 
   return (
-    <AuthContext.Provider value={{ user, userProfile, loading, signInWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, userProfile, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, logout }}>
       {children}
     </AuthContext.Provider>
   );

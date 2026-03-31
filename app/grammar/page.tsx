@@ -11,25 +11,16 @@ export default function GrammarList() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('All');
-  const [grammarList, setGrammarList] = useState(sampleGrammar);
-
   const levels = ['All', 'N5', 'N4', 'N3', 'N2', 'N1'];
-
-  useEffect(() => {
-    let filtered = sampleGrammar;
-    if (selectedLevel !== 'All') {
-      filtered = filtered.filter(g => g.level === selectedLevel);
-    }
-    if (searchTerm) {
-      const lower = searchTerm.toLowerCase();
-      filtered = filtered.filter(g => 
-        g.pattern.toLowerCase().includes(lower) || 
-        g.meaning.toLowerCase().includes(lower) ||
-        g.explanation.toLowerCase().includes(lower)
-      );
-    }
-    setGrammarList(filtered);
-  }, [searchTerm, selectedLevel]);
+  const grammarList = sampleGrammar.filter(g => {
+    const matchesLevel = selectedLevel === 'All' || g.level === selectedLevel;
+    const lower = searchTerm.toLowerCase();
+    const matchesSearch = !searchTerm || 
+      g.pattern.toLowerCase().includes(lower) || 
+      g.meaning.toLowerCase().includes(lower) ||
+      g.explanation.toLowerCase().includes(lower);
+    return matchesLevel && matchesSearch;
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 py-8">

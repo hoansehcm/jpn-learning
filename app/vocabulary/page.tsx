@@ -11,26 +11,17 @@ export default function VocabularyList() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('All');
-  const [vocabList, setVocabList] = useState(sampleVocabulary);
-
   const levels = ['All', 'N5', 'N4', 'N3', 'N2', 'N1'];
-
-  useEffect(() => {
-    let filtered = sampleVocabulary;
-    if (selectedLevel !== 'All') {
-      filtered = filtered.filter(v => v.level === selectedLevel);
-    }
-    if (searchTerm) {
-      const lower = searchTerm.toLowerCase();
-      filtered = filtered.filter(v => 
-        v.word.toLowerCase().includes(lower) || 
-        v.kana.toLowerCase().includes(lower) || 
-        v.meaning.toLowerCase().includes(lower) ||
-        v.romaji.toLowerCase().includes(lower)
-      );
-    }
-    setVocabList(filtered);
-  }, [searchTerm, selectedLevel]);
+  const vocabList = sampleVocabulary.filter(v => {
+    const matchesLevel = selectedLevel === 'All' || v.level === selectedLevel;
+    const lower = searchTerm.toLowerCase();
+    const matchesSearch = !searchTerm || 
+      v.word.toLowerCase().includes(lower) || 
+      v.kana.toLowerCase().includes(lower) || 
+      v.meaning.toLowerCase().includes(lower) ||
+      v.romaji.toLowerCase().includes(lower);
+    return matchesLevel && matchesSearch;
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 py-8">

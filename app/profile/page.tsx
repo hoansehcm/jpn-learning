@@ -6,6 +6,7 @@ import { motion } from 'motion/react';
 import { User, Target, Flame, CalendarDays, Save, LogOut } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import Image from 'next/image';
 
 export default function Profile() {
   const { user, userProfile, logout } = useAuth();
@@ -53,9 +54,9 @@ export default function Profile() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center gap-6"
           >
-            <div className="w-24 h-24 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden border-4 border-white shadow-md">
+            <div className="w-24 h-24 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden border-4 border-white shadow-md relative">
               {userProfile.photoURL ? (
-                <img src={userProfile.photoURL} alt="Avatar" className="w-full h-full object-cover" />
+                <Image src={userProfile.photoURL} alt="Avatar" fill className="object-cover" referrerPolicy="no-referrer" />
               ) : (
                 <User className="w-10 h-10 text-indigo-600" />
               )}

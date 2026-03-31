@@ -1,1 +1,106 @@
 @import "tailwindcss";
+
+@theme {
+  --color-paper: #fdfbf7;
+  --color-paper-dark: #f0ebe1;
+  --color-ink: #2c2c2c;
+  --color-ink-light: #5a5a5a;
+}
+
+@layer base {
+  :root {
+    --bg-color: #f8fafc; /* slate-50 */
+    --text-color: #0f172a; /* slate-900 */
+    --border-color: #e2e8f0; /* slate-200 */
+    --card-bg: #ffffff;
+  }
+  
+  .dark {
+    --bg-color: #0f172a; /* slate-900 */
+    --text-color: #f8fafc; /* slate-50 */
+    --border-color: #334155; /* slate-700 */
+    --card-bg: #1e293b; /* slate-800 */
+    --color-paper: #1e293b;
+    --color-ink: #f8fafc;
+  }
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Notebook Patterns */
+.bg-ruled {
+  background-image: linear-gradient(transparent 95%, #e2e8f0 95%);
+  background-size: 100% 2rem;
+}
+
+.bg-dotted {
+  background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+  background-size: 1.5rem 1.5rem;
+}
+
+.bg-grid {
+  background-image: linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+  background-size: 1.5rem 1.5rem;
+}
+
+/* UI Elements */
+.sticky-note {
+  background-color: #fef3c7;
+  box-shadow: 2px 4px 12px rgba(0,0,0,0.05);
+  border-bottom-right-radius: 24px 4px;
+  position: relative;
+}
+
+.sticky-note::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(to top left, rgba(0,0,0,0) 50%, rgba(0,0,0,0.05) 50%);
+  border-bottom-right-radius: 4px;
+}
+
+.paper-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+}
+
+.notebook-tab {
+  border-radius: 8px 8px 0 0;
+  border: 1px solid #e2e8f0;
+  border-bottom: none;
+  background-color: #f8fafc;
+  position: relative;
+  top: 1px;
+}
+
+.notebook-tab.active {
+  background-color: #ffffff;
+  border-bottom: 2px solid #ffffff;
+  z-index: 10;
+  font-weight: 600;
+}
+
+/* Custom Scrollbar for Notebook feel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-paper);
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
