@@ -1,0 +1,145 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "User ID" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "photoURL": { "type": "string" },
+        "targetLevel": { "type": "string", "enum": ["N5", "N4", "N3", "N2", "N1"] },
+        "dailyGoal": { "type": "number", "description": "Daily study goal in minutes or items" },
+        "streak": { "type": "number" },
+        "lastStudyDate": { "type": "string", "format": "date-time" },
+        "role": { "type": "string", "enum": ["user", "admin"] }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Vocabulary": {
+      "title": "Vocabulary",
+      "description": "Japanese vocabulary word",
+      "type": "object",
+      "properties": {
+        "word": { "type": "string" },
+        "kana": { "type": "string" },
+        "romaji": { "type": "string" },
+        "meaning": { "type": "string" },
+        "level": { "type": "string", "enum": ["N5", "N4", "N3", "N2", "N1"] },
+        "type": { "type": "string" },
+        "examples": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ja": { "type": "string" },
+              "vi": { "type": "string" }
+            }
+          }
+        }
+      },
+      "required": ["word", "kana", "meaning", "level"]
+    },
+    "Grammar": {
+      "title": "Grammar",
+      "description": "Japanese grammar pattern",
+      "type": "object",
+      "properties": {
+        "pattern": { "type": "string" },
+        "meaning": { "type": "string" },
+        "explanation": { "type": "string" },
+        "level": { "type": "string", "enum": ["N5", "N4", "N3", "N2", "N1"] },
+        "examples": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ja": { "type": "string" },
+              "vi": { "type": "string" }
+            }
+          }
+        }
+      },
+      "required": ["pattern", "meaning", "level"]
+    },
+    "Kanji": {
+      "title": "Kanji",
+      "description": "Japanese kanji character",
+      "type": "object",
+      "properties": {
+        "kanji": { "type": "string" },
+        "onyomi": { "type": "string" },
+        "kunyomi": { "type": "string" },
+        "meaning": { "type": "string" },
+        "level": { "type": "string", "enum": ["N5", "N4", "N3", "N2", "N1"] },
+        "strokeCount": { "type": "number" },
+        "examples": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ja": { "type": "string" },
+              "vi": { "type": "string" }
+            }
+          }
+        }
+      },
+      "required": ["kanji", "meaning", "level"]
+    },
+    "SavedItem": {
+      "title": "SavedItem",
+      "description": "Item bookmarked by user",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "itemId": { "type": "string" },
+        "itemType": { "type": "string", "enum": ["vocabulary", "grammar", "kanji"] },
+        "addedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "itemId", "itemType", "addedAt"]
+    },
+    "ReviewItem": {
+      "title": "ReviewItem",
+      "description": "Item in spaced repetition system",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "itemId": { "type": "string" },
+        "itemType": { "type": "string", "enum": ["vocabulary", "grammar", "kanji"] },
+        "nextReviewDate": { "type": "string", "format": "date-time" },
+        "interval": { "type": "number" },
+        "easeFactor": { "type": "number" },
+        "repetitions": { "type": "number" },
+        "status": { "type": "string", "enum": ["new", "learning", "reviewing", "mastered"] }
+      },
+      "required": ["userId", "itemId", "itemType", "nextReviewDate", "interval", "easeFactor", "repetitions", "status"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles"
+    },
+    "vocabulary/{vocabId}": {
+      "schema": { "$ref": "#/entities/Vocabulary" },
+      "description": "Vocabulary dictionary"
+    },
+    "grammar/{grammarId}": {
+      "schema": { "$ref": "#/entities/Grammar" },
+      "description": "Grammar dictionary"
+    },
+    "kanji/{kanjiId}": {
+      "schema": { "$ref": "#/entities/Kanji" },
+      "description": "Kanji dictionary"
+    },
+    "users/{userId}/savedItems/{savedItemId}": {
+      "schema": { "$ref": "#/entities/SavedItem" },
+      "description": "User's bookmarked items"
+    },
+    "users/{userId}/reviewItems/{reviewItemId}": {
+      "schema": { "$ref": "#/entities/ReviewItem" },
+      "description": "User's spaced repetition items"
+    }
+  }
+}
