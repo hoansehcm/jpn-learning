@@ -1,14 +1,86 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
-import { ArrowLeft, GraduationCap } from 'lucide-react';
-import { sampleKanji } from '../../../lib/sampleData';
+import { ArrowLeft, GraduationCap, Loader2 } from 'lucide-react';
+
+interface RawKanjiItem {
+  id: string;
+  kanji: string;
+  onyomi?: string;
+  kunyomi?: string;
+  meaning?: string;
+  level?: string | string[];
+  strokeCount?: number | string;
+  examples?: Array<{ ja: string; vi: string }>;
+}
+
+interface KanjiDetailItem {
+  id: string;
+  kanji: string;
+  onyomi: string;
+  kunyomi: string;
+  meaning: string;
+  level: string;
+  strokeCount: string;
+  examples: Array<{ ja: string; vi: string }>;
+}
+
+const normalizeKanjiItem = (item: RawKanjiItem): KanjiDetailItem => ({
+  id: item.id,
+  kanji: item.kanji,
+  onyomi: item.onyomi || '—',
+  kunyomi: item.kunyomi || '—',
+  meaning: item.meaning || 'Chưa có nghĩa',
+  level: Array.isArray(item.level) ? item.level[0] || 'N5' : item.level || 'N5',
+  strokeCount: String(item.strokeCount ?? '0'),
+  examples: Array.isArray(item.examples) ? item.examples : [],
+});
 
 export default function KanjiDetail() {
-  const { id } = useParams();
+  const params = useParams();
   const router = useRouter();
-  const kanji = sampleKanji.find((item) => item.id === id);
+  const [kanjiList, setKanjiList] = useState<KanjiDetailItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const id = useMemo(() => {
+    const value = params?.id;
+    return Array.isArray(value) ? value[0] : value;
+  }, [params]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    fetch('/data/kanji_data.json')
+      .then((res) => res.json())
+      .then((data: RawKanjiItem[]) => {
+        if (!mounted) return;
+        setKanjiList((data || []).map(normalizeKanjiItem));
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Lỗi khi tải chi tiết Kanji:', error);
+        if (mounted) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const kanji = kanjiList.find((item) => item.id === id || item.kanji === id);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 gap-3">
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+        <p className="text-soft">Đang tải chi tiết kanji...</p>
+      </div>
+    );
+  }
 
   if (!kanji) {
     return (
@@ -44,11 +116,11 @@ export default function KanjiDetail() {
                 <div className="mt-6 grid sm:grid-cols-2 gap-3">
                   <div className="rounded-[24px] bg-white/10 p-4">
                     <p className="text-sm text-white/70">Âm On</p>
-                    <p className="mt-2 text-xl font-semibold">{kanji.onyomi || '—'}</p>
+                    <p className="mt-2 text-xl font-semibold">{kanji.onyomi}</p>
                   </div>
                   <div className="rounded-[24px] bg-white/10 p-4">
                     <p className="text-sm text-white/70">Âm Kun</p>
-                    <p className="mt-2 text-xl font-semibold">{kanji.kunyomi || '—'}</p>
+                    <p className="mt-2 text-xl font-semibold">{kanji.kunyomi}</p>
                   </div>
                 </div>
               </div>
@@ -62,14 +134,21 @@ export default function KanjiDetail() {
               </div>
               <p className="font-semibold">Từ vựng chứa chữ này</p>
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              {kanji.examples.map((example, index) => (
-                <div key={index} className="rounded-[28px] bg-black/5 p-5">
-                  <p className="text-2xl font-semibold">{example.ja}</p>
-                  <p className="text-soft mt-3">{example.vi}</p>
-                </div>
-              ))}
-            </div>
+
+            {kanji.examples.length > 0 ? (
+              <div className="grid md:grid-cols-2 gap-4">
+                {kanji.examples.map((example, index) => (
+                  <div key={`${kanji.id}-${index}`} className="rounded-[28px] bg-black/5 p-5">
+                    <p className="text-2xl font-semibold">{example.ja}</p>
+                    <p className="text-soft mt-3">{example.vi}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-[28px] bg-black/5 p-5 text-soft">
+                Chưa có ví dụ cho chữ này.
+              </div>
+            )}
           </div>
         </motion.section>
       </div>
