@@ -1,4 +1,7 @@
-'use client';
+import fs from 'fs';
+import path from 'path';
+
+const speakingPageContent = `'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Mic, Play, CheckCircle, Volume2, Loader2, BookOpen } from 'lucide-react';
@@ -137,3 +140,7 @@ export default function SpeakingPage() {
     </div>
   );
 }
+`;
+
+fs.writeFileSync(path.join(process.cwd(), 'app', 'speaking', 'page.tsx'), speakingPageContent, 'utf-8');
+console.log('Update app/speaking/page.tsx success');

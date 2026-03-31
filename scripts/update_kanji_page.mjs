@@ -1,4 +1,7 @@
-'use client';
+import fs from 'fs';
+import path from 'path';
+
+const kanjiPageContent = `'use client';
 
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
@@ -70,11 +73,11 @@ export default function KanjiList() {
                      setSelectedLevel(level);
                      setVisibleCount(40);
                   }}
-                  className={`rounded-full px-5 py-2.5 whitespace-nowrap text-sm font-medium transition-colors ${
+                  className={\`rounded-full px-5 py-2.5 whitespace-nowrap text-sm font-medium transition-colors \${
                     selectedLevel === level
                       ? 'bg-emerald-600 text-white shadow-md'
                       : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                  }`}
+                  }\`}
                 >
                   {level === 'All' ? 'Tất cả' : level}
                 </button>
@@ -130,7 +133,7 @@ export default function KanjiList() {
                     </div>
                   )}
                   
-                  <Link href={`/kanji/${item.id}`} className="mt-5 inline-flex items-center gap-2 font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-500 transition-colors">
+                  <Link href={\`/kanji/\${item.id}\`} className="mt-5 inline-flex items-center gap-2 font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-500 transition-colors">
                     Xem chi tiết
                     <ChevronRight className="w-4 h-4" />
                   </Link>
@@ -162,3 +165,7 @@ export default function KanjiList() {
     </div>
   );
 }
+`;
+
+fs.writeFileSync(path.join(process.cwd(), 'app', 'kanji', 'page.tsx'), kanjiPageContent, 'utf-8');
+console.log('Update app/kanji/page.tsx success');

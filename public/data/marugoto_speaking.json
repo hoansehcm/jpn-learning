@@ -1,42 +1,125 @@
 [
   {
-    "id": "m1",
-    "lesson": "Katsudou A1 - Lesson 1",
-    "title": "こんにちは",
-    "topics": ["Chào hỏi", "Làm quen"],
+    "id": "m_a1_1",
+    "lesson": "Nhập môn Nhóm 1 - Bài 1",
+    "title": "こんにちは (Chào hỏi)",
+    "topics": [
+      "Gặp gỡ lần đầu",
+      "Chào buổi sáng"
+    ],
     "sentences": [
       {
-        "ja": "はじめまして。",
-        "romaji": "Hajimemashite.",
-        "vi": "Rất vui được gặp bạn."
+        "ja": "おはようございます。",
+        "romaji": "Ohayou gozaimasu.",
+        "vi": "Chào buổi sáng."
       },
       {
-        "ja": "わたしは [tên] です。",
-        "romaji": "Watashi wa [tên] desu.",
-        "vi": "Tôi là [tên]."
+        "ja": "こんにちは。",
+        "romaji": "Konnichiwa.",
+        "vi": "Xin chào (ban ngày)."
       },
       {
-        "ja": "どうぞよろしく。",
+        "ja": "こんばんは。",
+        "romaji": "Konbanwa.",
+        "vi": "Chào buổi tối."
+      },
+      {
+        "ja": "はじめまして、マリアです。",
+        "romaji": "Hajimemashite, Maria desu.",
+        "vi": "Rất vui được gặp chị. Tôi là Maria."
+      },
+      {
+        "ja": "どうぞ よろしく。",
         "romaji": "Douzo yoroshiku.",
-        "vi": "Mong được giúp đỡ."
+        "vi": "Rất mong nhận được sự giúp đỡ."
       }
     ]
   },
   {
-    "id": "m2",
-    "lesson": "Katsudou A1 - Lesson 2",
-    "title": "すきな たべもの",
-    "topics": ["Món ăn", "Sở thích"],
+    "id": "m_a1_2",
+    "lesson": "Nhập môn Nhóm 1 - Bài 2",
+    "title": "わたしの うち (Nhà của tôi)",
+    "topics": [
+      "Đồ vật",
+      "Khách đến chơi"
+    ],
+    "sentences": [
+      {
+        "ja": "これは なんですか。",
+        "romaji": "Kore wa nan desu ka.",
+        "vi": "Đây là cái gì?"
+      },
+      {
+        "ja": "それは パソコンです。",
+        "romaji": "Sore wa pasokon desu.",
+        "vi": "Đó là máy tính xách tay."
+      },
+      {
+        "ja": "いらっしゃい。どうぞ あがって ください。",
+        "romaji": "Irasshai. Douzo agatte kudasai.",
+        "vi": "Hoan nghênh bạn tới. Mời vào nhà."
+      },
+      {
+        "ja": "おじゃまします。",
+        "romaji": "Ojamashimasu.",
+        "vi": "Xin phép làm phiền ạ."
+      }
+    ]
+  },
+  {
+    "id": "m_a1_3",
+    "lesson": "Sơ cấp Nhóm 2 - Bài 3",
+    "title": "すきな たべもの (Món ăn yêu thích)",
+    "topics": [
+      "Ẩm thực",
+      "Hỏi đáp sở thích"
+    ],
     "sentences": [
       {
         "ja": "どんな たべものが すきですか。",
         "romaji": "Donna tabemono ga suki desu ka.",
-        "vi": "Bạn thích đồ ăn nào?"
+        "vi": "Bạn thích món ăn nào?"
       },
       {
-        "ja": "にくが すきです。",
-        "romaji": "Niku ga suki desu.",
+        "ja": "わたしは 肉が すきです。",
+        "romaji": "Watashi wa niku ga suki desu.",
         "vi": "Tôi thích thịt."
+      },
+      {
+        "ja": "あさごはんを たべますか。",
+        "romaji": "Asagohan o tabemasu ka.",
+        "vi": "Bạn có ăn sáng không?"
+      },
+      {
+        "ja": "はい、いつも パンと コーヒーです。",
+        "romaji": "Hai, itsumo pan to kōhī desu.",
+        "vi": "Vâng, lúc nào cũng là bánh mì và cà phê."
+      }
+    ]
+  },
+  {
+    "id": "m_a1_4",
+    "lesson": "Giao tiếp - Bài 4",
+    "title": "予定 (Kế hoạch)",
+    "topics": [
+      "Thời gian",
+      "Rủ rê"
+    ],
+    "sentences": [
+      {
+        "ja": "あした ひまですか。",
+        "romaji": "Ashita hima desu ka.",
+        "vi": "Ngày mai bạn có rảnh không?"
+      },
+      {
+        "ja": "いっしょに 映画を 見に いきませんか。",
+        "romaji": "Issho ni eiga o mini ikimasen ka.",
+        "vi": "Cùng đi xem phim không?"
+      },
+      {
+        "ja": "いいですね、いきましょう。",
+        "romaji": "Ii desu ne, ikimashou.",
+        "vi": "Hay đấy, đi thôi."
       }
     ]
   }
