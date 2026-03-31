@@ -1,22 +1,24 @@
 'use client';
 
-import { useAuth } from '../../contexts/AuthContext';
-import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { motion } from 'motion/react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { motion } from 'motion/react';
 import {
   ArrowUpRight,
   BarChart3,
   BookOpen,
   BrainCircuit,
   CalendarDays,
+  CheckCircle2,
   Flame,
   GraduationCap,
   PlayCircle,
+  Sparkles,
   Target,
 } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { useAuth } from '../../contexts/AuthContext';
 import { collectionStats, dashboardRoadmap, sampleGrammar, sampleKanji, sampleVocabulary } from '../../lib/sampleData';
 
 const weeklyData = [
@@ -53,43 +55,49 @@ export default function Dashboard() {
       count: sampleVocabulary.filter((item) => item.level === userProfile.targetLevel).length,
       total: collectionStats.vocabulary,
       icon: BookOpen,
-      tone: 'bg-[#f6efe6] text-[#8e3f22]',
+      tone: 'bg-[#fff1e8] text-[var(--accent-strong)]',
     },
     {
       label: 'Ngữ pháp',
       count: sampleGrammar.filter((item) => item.level === userProfile.targetLevel).length,
       total: collectionStats.grammar,
       icon: BrainCircuit,
-      tone: 'bg-[#efe9ff] text-[#5b39aa]',
+      tone: 'bg-[#f0ebff] text-[var(--violet)]',
     },
     {
       label: 'Kanji',
       count: sampleKanji.filter((item) => item.level === userProfile.targetLevel).length,
       total: collectionStats.kanji,
       icon: GraduationCap,
-      tone: 'bg-[#e7f4ee] text-[#1d7b55]',
+      tone: 'bg-[#e8f6ef] text-[var(--success)]',
     },
   ];
 
+  const missionList = [
+    'Học 10 từ mới theo level hiện tại',
+    'Ôn 1 mẫu ngữ pháp bằng ví dụ',
+    'Lật ít nhất 15 flashcard',
+  ];
+
   const nextLessons = [
-    { href: '/vocabulary', title: `Từ vựng ${userProfile.targetLevel}`, note: 'Bổ sung vốn từ nền tảng theo chủ đề học tập và công việc.' },
-    { href: '/grammar', title: `Ngữ pháp ${userProfile.targetLevel}`, note: 'Ôn lại mẫu trọng tâm trước khi sang bài mới.' },
-    { href: '/kanji', title: `Kanji ${userProfile.targetLevel}`, note: 'Tập trung vào chữ xuất hiện nhiều trong đề JLPT.' },
+    { href: '/vocabulary', title: `Từ vựng ${userProfile.targetLevel}`, note: 'Bắt đầu bằng các mục dễ nhớ để lấy lại nhịp học.' },
+    { href: '/grammar', title: `Ngữ pháp ${userProfile.targetLevel}`, note: 'Ôn những mẫu thường gặp trước khi làm quiz.' },
+    { href: '/kanji', title: `Kanji ${userProfile.targetLevel}`, note: 'Tra nhanh các chữ cần nhớ trong tuần này.' },
   ];
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 pb-16">
       <div className="max-w-7xl mx-auto space-y-6">
-        <section className="surface-panel rounded-[40px] p-6 sm:p-8 lg:p-10 overflow-hidden relative">
-          <div className="absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_top_right,rgba(190,91,53,0.18),transparent_52%)] pointer-events-none" />
-          <div className="relative z-10 grid lg:grid-cols-[1.15fr_0.85fr] gap-6 items-start">
+        <section className="surface-panel rounded-[42px] p-6 sm:p-8 lg:p-10 relative overflow-hidden">
+          <div className="absolute -top-10 right-4 h-40 w-40 rounded-full bg-[rgba(233,119,75,0.14)] blur-3xl" />
+          <div className="grid lg:grid-cols-[1.12fr_0.88fr] gap-6 relative z-10">
             <div>
-              <p className="text-sm uppercase tracking-[0.22em] text-soft">Dashboard cá nhân</p>
+              <p className="text-sm uppercase tracking-[0.22em] text-soft">Trang học của bạn</p>
               <h1 className="mt-4 font-serif text-4xl sm:text-5xl leading-tight">
-                Chào {userProfile.displayName}, hôm nay mình tiếp tục {userProfile.targetLevel} nhé.
+                Chào {userProfile.displayName}, hôm nay mình học tiếp {userProfile.targetLevel} nhé.
               </h1>
               <p className="mt-5 max-w-2xl text-soft leading-7">
-                Không cần làm thật nhiều trong một ngày. Chỉ cần hoàn thành nhịp học vừa đủ, rồi ôn lại đúng lúc.
+                App đã gom lại những việc quan trọng nhất để bạn không phải nghĩ quá nhiều trước khi bắt đầu.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
@@ -98,45 +106,87 @@ export default function Dashboard() {
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-6 py-3.5 font-semibold text-[var(--accent-ink)] accent-ring"
                 >
                   <PlayCircle className="w-5 h-5" />
-                  Bắt đầu phiên ôn tập
+                  Bắt đầu ôn tập
                 </Link>
                 <Link
                   href="/quizzes"
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--border-color)] bg-white/70 px-6 py-3.5 font-semibold"
+                  className="inline-flex items-center justify-center gap-2 rounded-full soft-pill px-6 py-3.5 font-semibold"
                 >
                   Làm mini quiz
                   <ArrowUpRight className="w-4 h-4" />
                 </Link>
               </div>
+
+              <div className="mt-8 grid sm:grid-cols-3 gap-4">
+                <div className="surface-card rounded-[28px] p-5">
+                  <div className="flex items-center gap-3">
+                    <div className="h-11 w-11 rounded-2xl bg-black text-white flex items-center justify-center">
+                      <Flame className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-soft">Chuỗi học</p>
+                      <p className="text-2xl font-bold">{userProfile.streak} ngày</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="surface-card rounded-[28px] p-5">
+                  <div className="flex items-center gap-3">
+                    <div className="h-11 w-11 rounded-2xl bg-[#fff1e8] text-[var(--accent-strong)] flex items-center justify-center">
+                      <Target className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-soft">Mục tiêu hôm nay</p>
+                      <p className="text-2xl font-bold">0/{userProfile.dailyGoal}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="surface-card rounded-[28px] p-5">
+                  <div className="flex items-center gap-3">
+                    <div className="h-11 w-11 rounded-2xl bg-[#f0ebff] text-[var(--violet)] flex items-center justify-center">
+                      <Sparkles className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-soft">Level hiện tại</p>
+                      <p className="text-2xl font-bold">{userProfile.targetLevel}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="grid gap-4">
-              <div className="surface-card rounded-[32px] p-5 grid grid-cols-2 gap-4">
-                <div className="rounded-[28px] bg-black text-white p-5">
-                  <div className="flex items-center gap-3">
-                    <Flame className="w-5 h-5" />
-                    <span className="text-sm uppercase tracking-[0.15em] text-white/70">Streak</span>
+            <div className="space-y-4">
+              <div className="surface-card rounded-[34px] p-6">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="h-11 w-11 rounded-2xl bg-[#e8f6ef] text-[var(--success)] flex items-center justify-center">
+                    <CheckCircle2 className="w-5 h-5" />
                   </div>
-                  <p className="mt-6 text-4xl font-bold">{userProfile.streak}</p>
-                  <p className="text-sm text-white/70 mt-1">ngày liên tục</p>
+                  <div>
+                    <p className="font-semibold">Nhiệm vụ hôm nay</p>
+                    <p className="text-sm text-soft">Chỉ cần hoàn thành từng bước nhỏ</p>
+                  </div>
                 </div>
-                <div className="rounded-[28px] bg-[#f6efe6] p-5">
-                  <div className="flex items-center gap-3 text-[var(--accent-strong)]">
-                    <Target className="w-5 h-5" />
-                    <span className="text-sm uppercase tracking-[0.15em]">Daily Goal</span>
-                  </div>
-                  <p className="mt-6 text-4xl font-bold">0/{userProfile.dailyGoal}</p>
-                  <p className="text-sm text-soft mt-1">mục học hôm nay</p>
+
+                <div className="space-y-3">
+                  {missionList.map((mission) => (
+                    <div key={mission} className="rounded-[24px] bg-black/5 px-4 py-3 flex items-center gap-3">
+                      <div className="h-2.5 w-2.5 rounded-full bg-[var(--success)]" />
+                      <p>{mission}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              <div className="surface-card rounded-[32px] p-5">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm uppercase tracking-[0.15em] text-soft">Mục tiêu hiện tại</p>
-                    <p className="mt-2 text-2xl font-semibold">JLPT {userProfile.targetLevel}</p>
+              <div className="surface-card rounded-[34px] p-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-11 w-11 rounded-2xl bg-[#fff1e8] text-[var(--accent-strong)] flex items-center justify-center">
+                    <CalendarDays className="w-5 h-5" />
                   </div>
-                  <CalendarDays className="w-6 h-6 text-soft" />
+                  <div>
+                    <p className="font-semibold">Lộ trình đang theo</p>
+                    <p className="text-sm text-soft">JLPT {userProfile.targetLevel}</p>
+                  </div>
                 </div>
                 <div className="mt-5 space-y-3">
                   {dashboardRoadmap
@@ -154,10 +204,10 @@ export default function Dashboard() {
         </section>
 
         <section className="grid lg:grid-cols-[1.1fr_0.9fr] gap-6">
-          <div className="surface-card rounded-[36px] p-6 sm:p-7">
+          <div className="surface-card rounded-[38px] p-6 sm:p-7">
             <div className="flex items-center justify-between gap-4 mb-6">
               <div>
-                <p className="text-sm uppercase tracking-[0.18em] text-soft">Mức độ phủ nội dung</p>
+                <p className="text-sm uppercase tracking-[0.18em] text-soft">Kho nội dung đang có</p>
                 <h2 className="mt-2 font-serif text-3xl">Tài nguyên cho {userProfile.targetLevel}</h2>
               </div>
             </div>
@@ -170,19 +220,19 @@ export default function Dashboard() {
                   </div>
                   <p className="mt-6 text-sm uppercase tracking-[0.15em] text-soft">{stat.label}</p>
                   <p className="mt-2 text-3xl font-bold">{stat.count}</p>
-                  <p className="text-sm text-soft mt-1">trên tổng {stat.total} mục hiện có</p>
+                  <p className="text-sm text-soft mt-1">trên tổng {stat.total} mục</p>
                 </motion.div>
               ))}
             </div>
 
-            <div className="mt-8 rounded-[30px] bg-[#fffaf2] p-5 border border-[var(--border-color)]">
+            <div className="mt-8 rounded-[30px] bg-[#fffaf4] p-5 border border-[var(--border-color)]">
               <div className="flex items-center gap-3 mb-4">
-                <div className="h-11 w-11 rounded-2xl bg-slate-900 text-white flex items-center justify-center">
+                <div className="h-11 w-11 rounded-2xl bg-black text-white flex items-center justify-center">
                   <BarChart3 className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="font-semibold">Hoạt động 7 ngày</p>
-                  <p className="text-sm text-soft">Theo dõi nhịp học để tránh học quá dồn</p>
+                  <p className="font-semibold">Nhịp học 7 ngày gần đây</p>
+                  <p className="text-sm text-soft">Nhìn nhanh để giữ tiến độ đều hơn</p>
                 </div>
               </div>
 
@@ -200,9 +250,9 @@ export default function Dashboard() {
                         boxShadow: '0 18px 40px rgba(49,34,17,0.12)',
                       }}
                     />
-                    <Bar dataKey="words" stackId="a" fill="#be5b35" radius={[0, 0, 10, 10]} />
-                    <Bar dataKey="grammar" stackId="a" fill="#7c3aed" />
-                    <Bar dataKey="kanji" stackId="a" fill="#0f9f6e" radius={[10, 10, 0, 0]} />
+                    <Bar dataKey="words" stackId="a" fill="#e9774b" radius={[0, 0, 10, 10]} />
+                    <Bar dataKey="grammar" stackId="a" fill="#8b6be8" />
+                    <Bar dataKey="kanji" stackId="a" fill="#3fa57c" radius={[10, 10, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -210,16 +260,12 @@ export default function Dashboard() {
           </div>
 
           <div className="space-y-6">
-            <div className="surface-card rounded-[36px] p-6">
-              <p className="text-sm uppercase tracking-[0.18em] text-soft">Tiếp tục học</p>
-              <h2 className="mt-2 font-serif text-3xl">Bài nên mở tiếp theo</h2>
+            <div className="surface-card rounded-[38px] p-6">
+              <p className="text-sm uppercase tracking-[0.18em] text-soft">Bắt đầu từ đâu</p>
+              <h2 className="mt-2 font-serif text-3xl">Gợi ý bài tiếp theo</h2>
               <div className="mt-6 space-y-3">
                 {nextLessons.map((lesson) => (
-                  <Link
-                    key={lesson.href}
-                    href={lesson.href}
-                    className="block rounded-[26px] bg-black/5 px-5 py-4 hover:bg-black/7"
-                  >
+                  <Link key={lesson.href} href={lesson.href} className="block rounded-[26px] bg-black/5 px-5 py-4 hover:bg-black/7">
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <p className="font-semibold">{lesson.title}</p>
@@ -232,7 +278,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="surface-card rounded-[36px] p-6">
+            <div className="surface-card rounded-[38px] p-6">
               <p className="text-sm uppercase tracking-[0.18em] text-soft">Lộ trình tổng thể</p>
               <div className="mt-5 space-y-3">
                 {dashboardRoadmap.map((item) => (

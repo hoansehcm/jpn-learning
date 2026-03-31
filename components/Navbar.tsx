@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAuth } from '../contexts/AuthContext';
+import { useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import {
   Book,
   BookOpen,
@@ -17,13 +18,12 @@ import {
   User,
   X,
 } from 'lucide-react';
-import { useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { useAuth } from '../contexts/AuthContext';
 import GlobalSearch from './GlobalSearch';
 import ThemeToggle from './ThemeToggle';
 
 const navLinks = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Trang học', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Từ vựng', href: '/vocabulary', icon: BookOpen },
   { name: 'Ngữ pháp', href: '/grammar', icon: BrainCircuit },
   { name: 'Kanji', href: '/kanji', icon: GraduationCap },
@@ -41,27 +41,27 @@ export default function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-5 pt-3">
-      <div className="surface-panel max-w-7xl mx-auto rounded-[28px] px-4 sm:px-5 h-16 flex items-center justify-between">
+      <div className="surface-panel max-w-7xl mx-auto rounded-[30px] px-4 sm:px-5 min-h-16 flex items-center justify-between">
         <div className="flex items-center gap-3 sm:gap-8 min-w-0">
           <Link href="/" className="flex items-center gap-3 min-w-0">
-            <div className="h-10 w-10 rounded-2xl bg-[var(--accent)] text-[var(--accent-ink)] flex items-center justify-center shadow-lg shadow-orange-900/10">
-              <span className="font-bold text-lg">日</span>
+            <div className="h-11 w-11 rounded-[18px] bg-[var(--accent)] text-[var(--accent-ink)] flex items-center justify-center shadow-lg shadow-orange-900/10">
+              <span className="font-bold text-lg">あ</span>
             </div>
             <div className="hidden sm:block min-w-0">
               <p className="font-serif text-lg font-bold leading-none">NihongoMaster</p>
-              <p className="text-[11px] uppercase tracking-[0.22em] text-soft mt-1">Learning Studio</p>
+              <p className="text-[11px] uppercase tracking-[0.2em] text-soft mt-1">Friendly study app</p>
             </div>
           </Link>
 
           {user && (
-            <div className="hidden lg:flex items-center gap-2">
+            <div className="hidden xl:flex items-center gap-2">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   className={`inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium ${
                     isActive(link.href)
-                      ? 'bg-[var(--accent)] text-[var(--accent-ink)]'
+                      ? 'bg-[var(--accent)] text-[var(--accent-ink)] accent-ring'
                       : 'text-soft hover:bg-black/5 hover:text-[var(--text-color)]'
                   }`}
                 >
@@ -74,11 +74,17 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <GlobalSearch />
+          <div className="hidden md:block">
+            <GlobalSearch />
+          </div>
           <ThemeToggle />
 
           {user ? (
-            <div className="hidden md:flex items-center gap-2">
+            <div className="hidden lg:flex items-center gap-2">
+              <div className="soft-pill rounded-full px-4 py-2 text-sm">
+                <span className="text-soft">Mục tiêu:</span>{' '}
+                <span className="font-semibold">JLPT {userProfile?.targetLevel || 'N5'}</span>
+              </div>
               <Link
                 href="/profile"
                 className="surface-card rounded-full px-4 py-2 text-sm font-medium text-soft hover:text-[var(--text-color)]"
@@ -86,26 +92,19 @@ export default function Navbar() {
                 {userProfile?.displayName || user.displayName || 'Học viên'}
               </Link>
               {userProfile?.role === 'admin' && (
-                <Link
-                  href="/admin"
-                  className="inline-flex items-center gap-2 rounded-full bg-amber-100/80 px-3 py-2 text-sm font-semibold text-amber-800"
-                >
+                <Link href="/admin" className="inline-flex items-center gap-2 rounded-full bg-amber-100/80 px-3 py-2 text-sm font-semibold text-amber-800">
                   <Shield className="w-4 h-4" />
                   Admin
                 </Link>
               )}
-              <button
-                onClick={logout}
-                className="surface-card rounded-full p-2.5 text-soft hover:text-rose-600"
-                title="Đăng xuất"
-              >
+              <button onClick={logout} className="surface-card rounded-full p-2.5 text-soft hover:text-rose-600" title="Đăng xuất">
                 <LogOut className="w-4 h-4" />
               </button>
             </div>
           ) : (
             <Link
               href="/login"
-              className="hidden md:inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent-ink)]"
+              className="hidden md:inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent-ink)] accent-ring"
             >
               <User className="w-4 h-4" />
               Đăng nhập
@@ -113,7 +112,7 @@ export default function Navbar() {
           )}
 
           <button
-            className="lg:hidden surface-card rounded-full p-2.5 text-soft"
+            className="xl:hidden surface-card rounded-full p-2.5 text-soft"
             onClick={() => setIsMobileMenuOpen((prev) => !prev)}
             aria-label="Mở menu"
           >
@@ -128,12 +127,21 @@ export default function Navbar() {
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
-            className="lg:hidden max-w-7xl mx-auto mt-3"
+            className="xl:hidden max-w-7xl mx-auto mt-3"
           >
-            <div className="surface-panel rounded-[28px] p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {user ? (
-                  <>
+            <div className="surface-panel rounded-[28px] p-4 space-y-3">
+              <div className="md:hidden">
+                <GlobalSearch />
+              </div>
+
+              {user ? (
+                <>
+                  <div className="soft-pill rounded-2xl px-4 py-3 text-sm">
+                    <p className="text-soft">Hôm nay mình đang học</p>
+                    <p className="font-semibold mt-1">JLPT {userProfile?.targetLevel || 'N5'} • {userProfile?.displayName || user.displayName || 'Học viên'}</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {navLinks.map((link) => (
                       <Link
                         key={link.href}
@@ -149,12 +157,15 @@ export default function Navbar() {
                         {link.name}
                       </Link>
                     ))}
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-2">
                     <Link
                       href="/profile"
                       onClick={() => setIsMobileMenuOpen(false)}
                       className="surface-card rounded-2xl px-4 py-3 text-soft"
                     >
-                      {userProfile?.displayName || user.displayName || 'Học viên'}
+                      Hồ sơ học tập
                     </Link>
                     <button
                       onClick={() => {
@@ -165,18 +176,18 @@ export default function Navbar() {
                     >
                       Đăng xuất
                     </button>
-                  </>
-                ) : (
-                  <Link
-                    href="/login"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] px-4 py-3 font-semibold text-[var(--accent-ink)]"
-                  >
-                    <User className="w-5 h-5" />
-                    Đăng nhập
-                  </Link>
-                )}
-              </div>
+                  </div>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] px-4 py-3 font-semibold text-[var(--accent-ink)]"
+                >
+                  <User className="w-5 h-5" />
+                  Đăng nhập để bắt đầu học
+                </Link>
+              )}
             </div>
           </motion.div>
         )}

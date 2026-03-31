@@ -1,32 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
+import { BrainCircuit, CheckCircle2, Frown, Meh, RotateCcw, Smile, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 import { useAuth } from '../../contexts/AuthContext';
 import { sampleVocabulary } from '../../lib/sampleData';
-import { BrainCircuit, CheckCircle2, RotateCcw, Frown, Meh, Smile, Sparkles } from 'lucide-react';
-import Link from 'next/link';
 
 export default function Flashcards() {
   const { user } = useAuth();
-  const [cards, setCards] = useState(sampleVocabulary);
+  const [cards] = useState(sampleVocabulary);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
 
   const currentCard = cards[currentIndex];
 
-  const handleFlip = () => {
-    setIsFlipped(!isFlipped);
-  };
-
-  const handleRate = (rating: 'again' | 'hard' | 'good' | 'easy') => {
-    // In a real app, calculate next review date based on rating using SRS algorithm
-    // and save to Firebase.
-    
+  const handleRate = () => {
     setIsFlipped(false);
     if (currentIndex < cards.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+      setCurrentIndex((prev) => prev + 1);
     } else {
       setIsFinished(true);
     }
@@ -34,35 +27,29 @@ export default function Flashcards() {
 
   if (isFinished) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full bg-white p-10 rounded-3xl shadow-xl border border-slate-100 text-center"
-        >
-          <div className="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+      <div className="px-4 sm:px-6 lg:px-8 py-12">
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="surface-card max-w-xl mx-auto rounded-[38px] p-10 text-center">
+          <div className="h-24 w-24 rounded-full bg-[#e8f6ef] text-[var(--success)] flex items-center justify-center mx-auto">
             <CheckCircle2 className="w-12 h-12" />
           </div>
-          <h2 className="text-3xl font-black text-slate-900 mb-4">Hoàn thành xuất sắc!</h2>
-          <p className="text-slate-600 mb-8 text-lg">
-            Bạn đã ôn tập xong {cards.length} thẻ ghi nhớ hôm nay. Hãy giữ vững phong độ nhé!
+          <h2 className="mt-6 font-serif text-4xl">Hoàn thành phiên ôn tập</h2>
+          <p className="mt-4 text-soft leading-7">
+            Bạn đã đi hết {cards.length} thẻ hôm nay. Một phiên học gọn như vậy là đủ tốt để giữ nhịp.
           </p>
-          <div className="flex flex-col gap-4">
-            <button 
+          <div className="mt-8 flex flex-col gap-3">
+            <button
               onClick={() => {
                 setCurrentIndex(0);
                 setIsFinished(false);
                 setIsFlipped(false);
               }}
-              className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-indigo-200"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-6 py-4 font-semibold text-[var(--accent-ink)]"
             >
-              <RotateCcw className="w-5 h-5" /> Ôn tập lại
+              <RotateCcw className="w-5 h-5" />
+              Ôn lại từ đầu
             </button>
-            <Link 
-              href="/dashboard"
-              className="w-full py-4 bg-slate-100 text-slate-700 rounded-2xl font-bold text-lg hover:bg-slate-200 transition-colors flex items-center justify-center"
-            >
-              Về bảng điều khiển
+            <Link href="/dashboard" className="inline-flex items-center justify-center rounded-full soft-pill px-6 py-4 font-semibold">
+              Về trang học
             </Link>
           </div>
         </motion.div>
@@ -71,120 +58,112 @@ export default function Flashcards() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center">
-      
-      <div className="w-full max-w-2xl mb-8 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center">
-            <BrainCircuit className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Ôn tập hàng ngày</h1>
-            <p className="text-slate-500 font-medium">Thẻ {currentIndex + 1} / {cards.length}</p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <div className="w-32 h-3 bg-slate-200 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-indigo-600 transition-all duration-500 ease-out"
-              style={{ width: `${((currentIndex) / cards.length) * 100}%` }}
-            ></div>
-          </div>
-        </div>
-      </div>
+    <div className="px-4 sm:px-6 lg:px-8 py-10">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <section className="surface-panel rounded-[40px] p-6 sm:p-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="h-14 w-14 rounded-[20px] bg-[#f0ebff] text-[var(--violet)] flex items-center justify-center">
+                <BrainCircuit className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm uppercase tracking-[0.18em] text-soft">Phiên ôn tập</p>
+                <h1 className="font-serif text-3xl mt-1">Flashcard hằng ngày</h1>
+                <p className="text-soft mt-2">Thẻ {currentIndex + 1} / {cards.length}</p>
+              </div>
+            </div>
 
-      {/* Flashcard Container */}
-      <div className="w-full max-w-2xl perspective-1000 relative h-[400px]">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentIndex + (isFlipped ? '-flipped' : '-front')}
-            initial={{ rotateX: isFlipped ? -90 : 90, opacity: 0 }}
-            animate={{ rotateX: 0, opacity: 1 }}
-            exit={{ rotateX: isFlipped ? 90 : -90, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="absolute inset-0 w-full h-full"
-            style={{ transformStyle: 'preserve-3d' }}
-          >
-            {!isFlipped ? (
-              // Front of card
-              <div 
-                onClick={handleFlip}
-                className="w-full h-full bg-white rounded-3xl shadow-xl border border-slate-100 flex flex-col items-center justify-center p-12 cursor-pointer hover:shadow-2xl transition-shadow group relative overflow-hidden"
+            <div className="rounded-full soft-pill px-4 py-2 text-sm">
+              {user ? 'Tiếp tục nhịp học của bạn' : 'Chế độ xem thử'}
+            </div>
+          </div>
+
+          <div className="mt-6 h-3 rounded-full bg-black/5 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-[linear-gradient(90deg,var(--accent),var(--violet))] transition-all duration-500"
+              style={{ width: `${(currentIndex / cards.length) * 100}%` }}
+            />
+          </div>
+        </section>
+
+        <div className="relative h-[430px]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`${currentIndex}-${isFlipped ? 'back' : 'front'}`}
+              initial={{ opacity: 0, y: 18, rotateY: isFlipped ? -10 : 10 }}
+              animate={{ opacity: 1, y: 0, rotateY: 0 }}
+              exit={{ opacity: 0, y: -18, rotateY: isFlipped ? 10 : -10 }}
+              transition={{ duration: 0.25 }}
+              className="absolute inset-0"
+            >
+              {!isFlipped ? (
+                <button
+                  onClick={() => setIsFlipped(true)}
+                  className="surface-card w-full h-full rounded-[40px] p-8 sm:p-12 text-left relative overflow-hidden"
+                >
+                  <div className="absolute -top-8 right-8 h-36 w-36 rounded-full bg-[rgba(233,119,75,0.14)] blur-3xl" />
+                  <div className="relative z-10 flex h-full flex-col justify-between">
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="rounded-full bg-[#fff1e8] px-3 py-1 text-sm font-semibold text-[var(--accent-strong)]">
+                        {currentCard.level}
+                      </span>
+                      <span className="text-sm text-soft">Chạm để lật thẻ</span>
+                    </div>
+
+                    <div className="text-center">
+                      <p className="font-serif text-7xl sm:text-8xl leading-none">{currentCard.word}</p>
+                      <p className="mt-6 text-lg text-soft">Nhìn chữ trước, đoán cách đọc và nghĩa.</p>
+                    </div>
+
+                    <div className="rounded-[26px] bg-black/5 px-5 py-4">
+                      <p className="text-sm text-soft">Mẹo học</p>
+                      <p className="mt-2 font-medium">Đừng cố nhớ hoàn hảo. Chỉ cần đoán, lật, rồi lặp lại.</p>
+                    </div>
+                  </div>
+                </button>
+              ) : (
+                <div className="surface-card w-full h-full rounded-[40px] p-8 sm:p-10 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 h-40 w-40 rounded-full bg-[rgba(139,107,232,0.12)] blur-3xl" />
+                  <div className="relative z-10 h-full flex flex-col justify-between">
+                    <div className="text-center">
+                      <p className="text-5xl sm:text-6xl font-bold">{currentCard.word}</p>
+                      <p className="mt-3 text-2xl text-[var(--accent-strong)]">{currentCard.kana}</p>
+                      <p className="mt-2 text-sm font-mono text-soft">{currentCard.romaji}</p>
+                      <p className="mt-6 text-3xl font-semibold">{currentCard.meaning}</p>
+                    </div>
+
+                    <div className="rounded-[28px] bg-black/5 p-5">
+                      <p className="font-medium">{currentCard.examples[0].ja}</p>
+                      <p className="text-soft mt-2">{currentCard.examples[0].vi}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        <div className={`transition-all duration-300 ${isFlipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { icon: Frown, label: 'Lại', sub: '1 phút', tone: 'text-rose-600 bg-rose-50 border-rose-100' },
+              { icon: Meh, label: 'Khó', sub: '10 phút', tone: 'text-amber-600 bg-amber-50 border-amber-100' },
+              { icon: Smile, label: 'Tốt', sub: '1 ngày', tone: 'text-emerald-600 bg-emerald-50 border-emerald-100' },
+              { icon: Sparkles, label: 'Dễ', sub: '4 ngày', tone: 'text-sky-600 bg-sky-50 border-sky-100' },
+            ].map((item) => (
+              <button
+                key={item.label}
+                onClick={handleRate}
+                className={`rounded-[28px] border p-4 flex flex-col items-center justify-center gap-2 ${item.tone}`}
               >
-                <div className="absolute top-6 left-6 px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-bold">
-                  {currentCard.level}
-                </div>
-                <div className="absolute top-6 right-6 text-slate-400 text-sm font-medium">
-                  Chạm để lật
-                </div>
-                
-                <h2 className="text-7xl font-black text-slate-900 mb-6 group-hover:scale-105 transition-transform duration-300">
-                  {currentCard.word}
-                </h2>
-                
-                <p className="text-slate-400 font-medium text-lg mt-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                  Nhấn phím Space hoặc click để xem đáp án
-                </p>
-              </div>
-            ) : (
-              // Back of card
-              <div className="w-full h-full bg-white rounded-3xl shadow-xl border border-slate-100 flex flex-col p-8 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 opacity-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-                
-                <div className="flex-1 flex flex-col justify-center relative z-10">
-                  <div className="text-center mb-8">
-                    <h2 className="text-5xl font-black text-slate-900 mb-4">{currentCard.word}</h2>
-                    <div className="text-2xl text-indigo-600 font-medium mb-2">【{currentCard.kana}】</div>
-                    <div className="text-lg text-slate-500 mb-6">{currentCard.romaji}</div>
-                    <p className="text-3xl font-bold text-slate-800">{currentCard.meaning}</p>
-                  </div>
-                  
-                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                    <p className="text-lg font-bold text-slate-900 mb-1">{currentCard.examples[0].ja}</p>
-                    <p className="text-slate-600">{currentCard.examples[0].vi}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      {/* Rating Buttons */}
-      <div className={`w-full max-w-2xl mt-8 transition-all duration-300 ${isFlipped ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
-        <div className="grid grid-cols-4 gap-4">
-          <button 
-            onClick={() => handleRate('again')}
-            className="flex flex-col items-center justify-center gap-2 py-4 bg-white border-2 border-rose-100 hover:border-rose-500 hover:bg-rose-50 rounded-2xl transition-all group"
-          >
-            <Frown className="w-8 h-8 text-rose-400 group-hover:text-rose-600" />
-            <span className="font-bold text-rose-600">Lại (1p)</span>
-          </button>
-          <button 
-            onClick={() => handleRate('hard')}
-            className="flex flex-col items-center justify-center gap-2 py-4 bg-white border-2 border-amber-100 hover:border-amber-500 hover:bg-amber-50 rounded-2xl transition-all group"
-          >
-            <Meh className="w-8 h-8 text-amber-400 group-hover:text-amber-600" />
-            <span className="font-bold text-amber-600">Khó (10p)</span>
-          </button>
-          <button 
-            onClick={() => handleRate('good')}
-            className="flex flex-col items-center justify-center gap-2 py-4 bg-white border-2 border-emerald-100 hover:border-emerald-500 hover:bg-emerald-50 rounded-2xl transition-all group"
-          >
-            <Smile className="w-8 h-8 text-emerald-400 group-hover:text-emerald-600" />
-            <span className="font-bold text-emerald-600">Tốt (1n)</span>
-          </button>
-          <button 
-            onClick={() => handleRate('easy')}
-            className="flex flex-col items-center justify-center gap-2 py-4 bg-white border-2 border-blue-100 hover:border-blue-500 hover:bg-blue-50 rounded-2xl transition-all group"
-          >
-            <Sparkles className="w-8 h-8 text-blue-400 group-hover:text-blue-600" />
-            <span className="font-bold text-blue-600">Dễ (4n)</span>
-          </button>
+                <item.icon className="w-7 h-7" />
+                <span className="font-semibold">{item.label}</span>
+                <span className="text-sm opacity-80">{item.sub}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
-
     </div>
   );
 }
