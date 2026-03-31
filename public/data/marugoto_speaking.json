@@ -1,0 +1,43 @@
+[
+  {
+    "id": "m1",
+    "lesson": "Katsudou A1 - Lesson 1",
+    "title": "こんにちは",
+    "topics": ["Chào hỏi", "Làm quen"],
+    "sentences": [
+      {
+        "ja": "はじめまして。",
+        "romaji": "Hajimemashite.",
+        "vi": "Rất vui được gặp bạn."
+      },
+      {
+        "ja": "わたしは [tên] です。",
+        "romaji": "Watashi wa [tên] desu.",
+        "vi": "Tôi là [tên]."
+      },
+      {
+        "ja": "どうぞよろしく。",
+        "romaji": "Douzo yoroshiku.",
+        "vi": "Mong được giúp đỡ."
+      }
+    ]
+  },
+  {
+    "id": "m2",
+    "lesson": "Katsudou A1 - Lesson 2",
+    "title": "すきな たべもの",
+    "topics": ["Món ăn", "Sở thích"],
+    "sentences": [
+      {
+        "ja": "どんな たべものが すきですか。",
+        "romaji": "Donna tabemono ga suki desu ka.",
+        "vi": "Bạn thích đồ ăn nào?"
+      },
+      {
+        "ja": "にくが すきです。",
+        "romaji": "Niku ga suki desu.",
+        "vi": "Tôi thích thịt."
+      }
+    ]
+  }
+]

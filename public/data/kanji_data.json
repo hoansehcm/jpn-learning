@@ -1,0 +1,28 @@
+[
+  {
+    "id": "k1",
+    "kanji": "日",
+    "onyomi": "ニチ、ジツ",
+    "kunyomi": "ひ、-び、-か",
+    "meaning": "Ngày, mặt trời",
+    "level": "N5",
+    "strokeCount": 4,
+    "examples": [
+      { "ja": "日曜日 (にちようび)", "vi": "Chủ nhật" },
+      { "ja": "日本 (にほん)", "vi": "Nhật Bản" }
+    ]
+  },
+  {
+    "id": "k2",
+    "kanji": "月",
+    "onyomi": "ゲツ、ガツ",
+    "kunyomi": "つき",
+    "meaning": "Tháng, mặt trăng",
+    "level": "N5",
+    "strokeCount": 4,
+    "examples": [
+      { "ja": "月曜日 (げつようび)", "vi": "Thứ hai" },
+      { "ja": "一月 (いちがつ)", "vi": "Tháng một" }
+    ]
+  }
+]
