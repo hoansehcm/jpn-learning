@@ -1,186 +1,159 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, BookOpen, BrainCircuit, GraduationCap } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
+import { BookOpen, BrainCircuit, GraduationCap, Search, X } from 'lucide-react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'motion/react';
+import { globalSearchResults } from '../lib/sampleData';
 
 interface SearchResult {
   id: string;
   type: 'vocabulary' | 'grammar' | 'kanji';
   title: string;
-  subtitle?: string;
+  subtitle: string;
   level: string;
+  keywords: string;
 }
-
-// Mock search results for demonstration
-const mockSearchResults: SearchResult[] = [
-  { id: 'v1', type: 'vocabulary', title: '食べる', subtitle: 'Ăn', level: 'N5' },
-  { id: 'g1', type: 'grammar', title: '〜は〜です', subtitle: '... là ...', level: 'N5' },
-  { id: 'k1', type: 'kanji', title: '水', subtitle: 'Nước', level: 'N5' },
-];
 
 export default function GlobalSearch() {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
         setIsOpen(true);
       }
-      if (e.key === 'Escape' && isOpen) {
+
+      if (event.key === 'Escape') {
         setIsOpen(false);
       }
     };
 
-    const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     document.addEventListener('mousedown', handleClickOutside);
-    
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isOpen]);
+  }, []);
 
   useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus();
+    if (isOpen) {
+      inputRef.current?.focus();
     }
   }, [isOpen]);
 
-  const filteredResults = query.length > 1 
-    ? mockSearchResults.filter(item => 
-        item.title.toLowerCase().includes(query.toLowerCase()) || 
-        (item.subtitle && item.subtitle.toLowerCase().includes(query.toLowerCase()))
-      )
-    : [];
+  const results: SearchResult[] =
+    query.trim().length > 0
+      ? globalSearchResults
+          .filter((item) => item.keywords.toLowerCase().includes(query.toLowerCase()))
+          .slice(0, 8)
+      : [];
 
-  const getIcon = (type: string) => {
-    switch (type) {
-      case 'vocabulary': return <BookOpen className="w-4 h-4 text-emerald-600" />;
-      case 'grammar': return <BrainCircuit className="w-4 h-4 text-purple-600" />;
-      case 'kanji': return <GraduationCap className="w-4 h-4 text-rose-600" />;
-      default: return <Search className="w-4 h-4 text-gray-600" />;
-    }
+  const icons = {
+    vocabulary: <BookOpen className="w-4 h-4 text-emerald-700" />,
+    grammar: <BrainCircuit className="w-4 h-4 text-violet-700" />,
+    kanji: <GraduationCap className="w-4 h-4 text-amber-700" />,
   };
 
-  const getBgColor = (type: string) => {
-    switch (type) {
-      case 'vocabulary': return 'bg-emerald-100';
-      case 'grammar': return 'bg-purple-100';
-      case 'kanji': return 'bg-rose-100';
-      default: return 'bg-gray-100';
-    }
+  const badgeStyles = {
+    vocabulary: 'bg-emerald-100/80',
+    grammar: 'bg-violet-100/80',
+    kanji: 'bg-amber-100/80',
   };
 
   return (
     <>
-      <button 
+      <button
         onClick={() => setIsOpen(true)}
-        className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-lg transition-colors border border-slate-200"
+        className="hidden md:inline-flex items-center gap-2 rounded-full border border-[var(--border-color)] bg-black/5 px-3.5 py-2 text-sm text-soft hover:text-[var(--text-color)]"
       >
         <Search className="w-4 h-4" />
-        <span className="text-sm font-medium">Tìm kiếm...</span>
-        <kbd className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white border border-slate-300 text-[10px] font-mono font-bold text-slate-500">
-          <span className="text-xs">⌘</span>K
-        </kbd>
+        Tìm nhanh
+        <kbd className="rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-mono">Ctrl K</kbd>
       </button>
 
-      <button 
+      <button
         onClick={() => setIsOpen(true)}
-        className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+        className="md:hidden surface-card rounded-full p-2.5 text-soft"
+        aria-label="Mở tìm kiếm"
       >
-        <Search className="w-5 h-5" />
+        <Search className="w-4 h-4" />
       </button>
 
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-[100] flex items-start justify-center pt-16 sm:pt-24 px-4 bg-slate-900/50 backdrop-blur-sm">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: -20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: -20 }}
-              transition={{ duration: 0.15 }}
+          <div className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm px-4 pt-20 sm:pt-28">
+            <motion.div
               ref={containerRef}
-              className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200"
+              initial={{ opacity: 0, y: -18, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -18, scale: 0.98 }}
+              className="surface-panel max-w-3xl mx-auto rounded-[32px] overflow-hidden"
             >
-              <div className="flex items-center px-4 py-4 border-b border-slate-100">
-                <Search className="w-5 h-5 text-slate-400 mr-3" />
+              <div className="flex items-center gap-3 px-5 py-4 border-b border-[var(--border-color)]">
+                <Search className="w-5 h-5 text-soft" />
                 <input
                   ref={inputRef}
-                  type="text"
-                  placeholder="Tìm từ vựng, ngữ pháp, kanji..."
                   value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  className="flex-1 bg-transparent border-none outline-none text-lg text-slate-900 placeholder:text-slate-400 font-sans"
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Tìm theo Nhật ngữ, romaji hoặc nghĩa tiếng Việt"
+                  className="flex-1 bg-transparent outline-none text-base text-[var(--text-color)] placeholder:text-soft"
                 />
-                <button 
-                  onClick={() => setIsOpen(false)}
-                  className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-                >
-                  <X className="w-5 h-5" />
+                <button onClick={() => setIsOpen(false)} className="rounded-full p-2 hover:bg-black/5">
+                  <X className="w-4 h-4 text-soft" />
                 </button>
               </div>
 
-              <div className="max-h-[60vh] overflow-y-auto p-2 hide-scrollbar">
-                {query.length === 0 ? (
-                  <div className="py-12 text-center text-slate-500">
-                    <p className="text-sm font-medium">Nhập từ khóa để tìm kiếm</p>
-                    <p className="text-xs mt-1 opacity-70">Hỗ trợ tiếng Nhật, Romaji và tiếng Việt</p>
+              <div className="max-h-[60vh] overflow-y-auto p-3">
+                {query.trim().length === 0 && (
+                  <div className="px-4 py-12 text-center">
+                    <p className="font-serif text-2xl">Tra cứu mọi thứ trong một chỗ</p>
+                    <p className="text-soft mt-2">Gõ ví dụ như `taberu`, `〜ようにする`, `責任` hoặc `kinh nghiệm`.</p>
                   </div>
-                ) : filteredResults.length > 0 ? (
-                  <ul className="space-y-1">
-                    {filteredResults.map((result) => (
-                      <li key={result.id}>
-                        <Link 
+                )}
+
+                {query.trim().length > 0 && results.length === 0 && (
+                  <div className="px-4 py-12 text-center">
+                    <p className="text-lg font-semibold">Chưa có kết quả phù hợp</p>
+                    <p className="text-soft mt-2">Thử bằng chữ Nhật, kana, romaji hoặc nghĩa tiếng Việt.</p>
+                  </div>
+                )}
+
+                {results.length > 0 && (
+                  <ul className="space-y-2">
+                    {results.map((result) => (
+                      <li key={`${result.type}-${result.id}`}>
+                        <Link
                           href={`/${result.type}/${result.id}`}
                           onClick={() => setIsOpen(false)}
-                          className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group"
+                          className="flex items-center justify-between rounded-[24px] px-4 py-3 hover:bg-black/5"
                         >
-                          <div className="flex items-center gap-4">
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${getBgColor(result.type)}`}>
-                              {getIcon(result.type)}
+                          <div className="flex items-center gap-4 min-w-0">
+                            <div className={`h-10 w-10 rounded-2xl flex items-center justify-center ${badgeStyles[result.type]}`}>
+                              {icons[result.type]}
                             </div>
-                            <div>
-                              <div className="flex items-baseline gap-2">
-                                <span className="font-bold text-slate-900 font-serif text-lg">{result.title}</span>
-                                {result.subtitle && (
-                                  <span className="text-sm text-slate-500 font-sans">{result.subtitle}</span>
-                                )}
-                              </div>
+                            <div className="min-w-0">
+                              <p className="font-semibold truncate">{result.title}</p>
+                              <p className="text-sm text-soft truncate">{result.subtitle}</p>
                             </div>
                           </div>
-                          <span className="text-xs font-mono font-bold px-2 py-1 bg-slate-100 text-slate-600 rounded">
-                            {result.level}
-                          </span>
+                          <span className="rounded-full bg-white/80 px-2.5 py-1 text-xs font-mono">{result.level}</span>
                         </Link>
                       </li>
                     ))}
                   </ul>
-                ) : (
-                  <div className="py-12 text-center text-slate-500">
-                    <p className="text-sm font-medium">Không tìm thấy kết quả cho &quot;{query}&quot;</p>
-                  </div>
                 )}
-              </div>
-              
-              <div className="bg-slate-50 px-4 py-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
-                <div className="flex items-center gap-4">
-                  <span className="flex items-center gap-1"><kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono">↑↓</kbd> Điều hướng</span>
-                  <span className="flex items-center gap-1"><kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono">↵</kbd> Chọn</span>
-                </div>
-                <span className="flex items-center gap-1"><kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono">ESC</kbd> Đóng</span>
               </div>
             </motion.div>
           </div>

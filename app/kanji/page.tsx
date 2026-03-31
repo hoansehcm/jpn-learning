@@ -1,119 +1,111 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Search, Bookmark, CheckCircle, ChevronRight } from 'lucide-react';
+import { ChevronRight, GraduationCap, Search } from 'lucide-react';
 import Link from 'next/link';
-import { sampleKanji } from '../../lib/sampleData';
-import { useAuth } from '../../contexts/AuthContext';
+import { jlptLevels, sampleKanji } from '../../lib/sampleData';
 
 export default function KanjiList() {
-  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('All');
-  const levels = ['All', 'N5', 'N4', 'N3', 'N2', 'N1'];
-  const kanjiList = sampleKanji.filter(k => {
-    const matchesLevel = selectedLevel === 'All' || k.level === selectedLevel;
-    const lower = searchTerm.toLowerCase();
-    const matchesSearch = !searchTerm || 
-      k.kanji.toLowerCase().includes(lower) || 
-      k.meaning.toLowerCase().includes(lower) ||
-      k.onyomi.toLowerCase().includes(lower) ||
-      k.kunyomi.toLowerCase().includes(lower);
+  const levels = ['All', ...jlptLevels];
+
+  const kanjiList = sampleKanji.filter((item) => {
+    const matchesLevel = selectedLevel === 'All' || item.level === selectedLevel;
+    const query = searchTerm.toLowerCase();
+    const matchesSearch =
+      query.length === 0 ||
+      [item.kanji, item.meaning, item.onyomi, item.kunyomi].some((field) => field.toLowerCase().includes(query));
+
     return matchesLevel && matchesSearch;
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Hán tự (Kanji)</h1>
-          <p className="text-slate-600">Học và ôn tập Kanji theo cấp độ JLPT.</p>
-        </div>
+    <div className="px-4 sm:px-6 lg:px-8 pb-16">
+      <div className="max-w-6xl mx-auto space-y-6">
+        <section className="surface-panel rounded-[40px] p-6 sm:p-8 lg:p-10">
+          <p className="text-sm uppercase tracking-[0.22em] text-soft">Kanji Shelf</p>
+          <h1 className="mt-3 font-serif text-4xl sm:text-5xl">Kanji theo cấp độ, có ví dụ để nhớ lâu hơn</h1>
+          <p className="mt-4 max-w-3xl text-soft leading-7">
+            Mỗi chữ gồm âm On, âm Kun, số nét và từ vựng tiêu biểu, giúp bạn nhìn chữ theo cụm ứng dụng chứ không học rời rạc.
+          </p>
+        </section>
 
-        {/* Search and Filters */}
-        <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-8 flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <input 
-              type="text" 
-              placeholder="Tìm kiếm chữ Hán, âm On, âm Kun hoặc nghĩa..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
-            />
+        <section className="surface-card rounded-[32px] p-4 sm:p-5">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-soft" />
+              <input
+                type="text"
+                placeholder="Tìm 学, けん, trách nhiệm hoặc かいぜん"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                className="w-full rounded-[22px] border border-[var(--border-color)] bg-[#fffaf2] pl-12 pr-4 py-3.5 outline-none focus:border-emerald-500"
+              />
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {levels.map((level) => (
+                <button
+                  key={level}
+                  onClick={() => setSelectedLevel(level)}
+                  className={`rounded-full px-4 py-2.5 whitespace-nowrap text-sm font-medium ${
+                    selectedLevel === level ? 'bg-emerald-600 text-white' : 'bg-black/5 text-soft'
+                  }`}
+                >
+                  {level === 'All' ? 'Tất cả' : level}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
-            {levels.map(level => (
-              <button
-                key={level}
-                onClick={() => setSelectedLevel(level)}
-                className={`px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-colors ${
-                  selectedLevel === level 
-                    ? 'bg-emerald-600 text-white' 
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                {level === 'All' ? 'Tất cả' : level}
-              </button>
-            ))}
-          </div>
-        </div>
+        </section>
 
-        {/* Kanji List */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {kanjiList.length > 0 ? (
-            kanjiList.map((kanji, index) => (
-              <motion.div
-                key={kanji.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all group flex flex-col items-center text-center relative overflow-hidden"
-              >
-                <div className="absolute top-4 left-4 px-2 py-1 bg-emerald-50 text-emerald-700 rounded-md text-xs font-bold">{kanji.level}</div>
-                <div className="absolute top-4 right-4 text-xs text-slate-400 font-medium">{kanji.strokeCount} nét</div>
-                
-                <h3 className="text-7xl font-black text-slate-900 mt-8 mb-4 group-hover:text-emerald-600 transition-colors font-serif">{kanji.kanji}</h3>
-                <p className="text-xl font-bold text-slate-800 mb-6">{kanji.meaning}</p>
-                
-                <div className="w-full space-y-2 mb-6">
-                  <div className="flex justify-between items-center text-sm border-b border-slate-100 pb-2">
-                    <span className="text-slate-500 font-medium">On</span>
-                    <span className="text-slate-900 font-bold">{kanji.onyomi}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm border-b border-slate-100 pb-2">
-                    <span className="text-slate-500 font-medium">Kun</span>
-                    <span className="text-slate-900 font-bold">{kanji.kunyomi}</span>
-                  </div>
+        <section className="grid sm:grid-cols-2 xl:grid-cols-4 gap-5">
+          {kanjiList.map((item, index) => (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.03 }}
+              className="surface-card rounded-[32px] p-5"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">{item.level}</span>
+                <span className="text-xs text-soft">{item.strokeCount} nét</span>
+              </div>
+              <div className="mt-6 rounded-[28px] bg-[#f7fbf8] py-8 text-center">
+                <p className="font-serif text-7xl leading-none">{item.kanji}</p>
+              </div>
+              <p className="mt-5 text-xl font-semibold">{item.meaning}</p>
+              <div className="mt-4 space-y-2 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-soft">On</span>
+                  <span className="font-medium text-right">{item.onyomi || '—'}</span>
                 </div>
-                
-                <div className="flex items-center justify-between w-full mt-auto pt-4 border-t border-slate-100">
-                  <div className="flex gap-2">
-                    <button className="p-2 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-full transition-colors" title="Lưu Kanji">
-                      <Bookmark className="w-5 h-5" />
-                    </button>
-                    <button className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-full transition-colors" title="Đánh dấu đã học">
-                      <CheckCircle className="w-5 h-5" />
-                    </button>
-                  </div>
-                  <Link 
-                    href={`/kanji/${kanji.id}`}
-                    className="p-2 bg-slate-100 text-slate-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-colors flex items-center justify-center"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </Link>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-soft">Kun</span>
+                  <span className="font-medium text-right">{item.kunyomi || '—'}</span>
                 </div>
-              </motion.div>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-12 bg-white rounded-2xl border border-slate-200">
-              <p className="text-slate-500 text-lg">Không tìm thấy Kanji nào phù hợp.</p>
+              </div>
+              <div className="mt-5 rounded-[22px] bg-black/5 p-4">
+                <p className="font-medium">{item.examples[0].ja}</p>
+                <p className="text-sm text-soft mt-2">{item.examples[0].vi}</p>
+              </div>
+              <Link href={`/kanji/${item.id}`} className="mt-5 inline-flex items-center gap-2 font-semibold text-emerald-700">
+                Xem chi tiết
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            </motion.div>
+          ))}
+
+          {kanjiList.length === 0 && (
+            <div className="sm:col-span-2 xl:col-span-4 surface-card rounded-[30px] p-10 text-center">
+              <GraduationCap className="w-8 h-8 mx-auto text-soft" />
+              <p className="mt-4 text-lg font-semibold">Không tìm thấy kanji phù hợp</p>
+              <p className="text-soft mt-2">Hãy thử tìm theo nghĩa hoặc âm đọc.</p>
             </div>
           )}
-        </div>
-
+        </section>
       </div>
     </div>
   );

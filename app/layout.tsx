@@ -1,17 +1,19 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Inter, Lora, JetBrains_Mono } from 'next/font/google';
+import { Be_Vietnam_Pro, Libre_Baskerville, JetBrains_Mono } from 'next/font/google';
 import { AuthProvider } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
 
-const inter = Inter({
+const sans = Be_Vietnam_Pro({
   subsets: ['latin', 'vietnamese'],
   variable: '--font-sans',
+  weight: ['400', '500', '600', '700'],
 });
 
-const lora = Lora({
-  subsets: ['latin', 'vietnamese'],
+const serif = Libre_Baskerville({
+  subsets: ['latin', 'latin-ext'],
   variable: '--font-serif',
+  weight: ['400', '700'],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -20,19 +22,17 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'NihongoMaster - Sổ tay học tiếng Nhật',
-  description: 'Nền tảng học tiếng Nhật toàn diện từ N5 đến N1 với phong cách sổ tay ghi chép.',
+  title: 'NihongoMaster | Studio học tiếng Nhật từ N5 đến N1',
+  description: 'Nền tảng học tiếng Nhật với từ vựng, ngữ pháp, kanji, flashcard và lộ trình JLPT rõ ràng.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi" className={`${inter.variable} ${lora.variable} ${jetbrainsMono.variable}`}>
-      <body className="bg-[#fdfbf7] text-[#2c2c2c] font-sans antialiased flex flex-col min-h-screen selection:bg-indigo-200 selection:text-indigo-900">
+    <html lang="vi" className={`${sans.variable} ${serif.variable} ${jetbrainsMono.variable}`}>
+      <body className="font-sans antialiased flex flex-col min-h-screen">
         <AuthProvider>
           <Navbar />
-          <main className="flex-grow pt-20">
-            {children}
-          </main>
+          <main className="flex-grow pt-20">{children}</main>
         </AuthProvider>
       </body>
     </html>

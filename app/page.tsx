@@ -3,8 +3,16 @@
 import { motion } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, BookOpen, BrainCircuit, GraduationCap, Sparkles, CheckCircle2 } from 'lucide-react';
-import Image from 'next/image';
+import {
+  ArrowRight,
+  BookOpen,
+  BrainCircuit,
+  GraduationCap,
+  Layers3,
+  Sparkles,
+  Target,
+} from 'lucide-react';
+import { collectionStats, dashboardRoadmap } from '../lib/sampleData';
 
 export default function Home() {
   const { user, signInWithGoogle } = useAuth();
@@ -13,179 +21,200 @@ export default function Home() {
   const handleStart = async () => {
     if (user) {
       router.push('/dashboard');
-    } else {
-      await signInWithGoogle();
-      router.push('/dashboard');
+      return;
     }
+
+    await signInWithGoogle();
+    router.push('/dashboard');
   };
 
   const features = [
     {
       icon: BookOpen,
-      title: 'Từ vựng & Ngữ pháp',
-      description: 'Hệ thống từ vựng và ngữ pháp đầy đủ từ N5 đến N1, kèm ví dụ song ngữ chi tiết.',
-      color: 'bg-blue-100 text-blue-600',
-    },
-    {
-      icon: GraduationCap,
-      title: 'Kanji theo cấp độ',
-      description: 'Học Hán tự với âm On, âm Kun, số nét và từ vựng liên quan một cách bài bản.',
-      color: 'bg-purple-100 text-purple-600',
+      title: 'Kho nội dung thật sự dùng được',
+      description: 'Từ vựng, ngữ pháp và kanji được gom theo JLPT để bạn học có trật tự thay vì nhảy tài liệu.',
     },
     {
       icon: BrainCircuit,
-      title: 'Ôn tập thông minh (SRS)',
-      description: 'Thuật toán lặp lại ngắt quãng giúp bạn ghi nhớ từ vựng lâu hơn, học ít nhớ nhiều.',
-      color: 'bg-emerald-100 text-emerald-600',
+      title: 'Học rồi phải ôn lại',
+      description: 'Flashcard và nhịp ôn tập được đặt ngay trong flow học để giảm cảm giác “học xong quên luôn”.',
     },
     {
-      icon: Sparkles,
-      title: 'Thi thử JLPT',
-      description: 'Đánh giá năng lực với các bài thi thử chuẩn cấu trúc JLPT thực tế.',
-      color: 'bg-orange-100 text-orange-600',
+      icon: GraduationCap,
+      title: 'Tập trung vào tiến độ',
+      description: 'Mỗi cấp độ có mục tiêu rõ ràng, dễ thấy mình đang ở đâu và cần làm gì tiếp theo.',
     },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Hero Section */}
-      <section className="relative pt-20 pb-32 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/japan/1920/1080?blur=10')] bg-cover bg-center opacity-5"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-indigo-50/50 to-slate-50"></div>
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center max-w-3xl mx-auto mt-16">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-100 text-indigo-700 font-medium text-sm mb-8"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>Nền tảng học tiếng Nhật thế hệ mới</span>
-            </motion.div>
-            
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-5xl md:text-7xl font-extrabold text-slate-900 tracking-tight mb-8 leading-tight"
-            >
-              Chinh phục JLPT <br className="hidden md:block" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
-                từ N5 đến N1
-              </span>
-            </motion.h1>
-            
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-xl text-slate-600 mb-10 leading-relaxed"
-            >
-              Hệ thống học tập toàn diện với từ vựng, ngữ pháp, kanji và thuật toán ôn tập thông minh giúp bạn đạt mục tiêu nhanh nhất.
-            </motion.p>
-            
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4"
-            >
-              <button
-                onClick={handleStart}
-                className="w-full sm:w-auto px-8 py-4 bg-indigo-600 text-white rounded-full font-bold text-lg hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-200 flex items-center justify-center gap-2"
+    <div className="relative overflow-hidden">
+      <section className="px-4 sm:px-6 lg:px-8 pt-10 pb-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="surface-panel editorial-grid rounded-[40px] p-6 sm:p-10 lg:p-14 overflow-hidden relative">
+            <div className="absolute inset-y-0 right-0 w-[38%] bg-[radial-gradient(circle_at_top,rgba(190,91,53,0.22),transparent_58%)] pointer-events-none" />
+            <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-10 items-start relative z-10">
+              <div>
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="inline-flex items-center gap-2 rounded-full border border-[var(--border-color)] bg-white/70 px-4 py-2 text-sm"
+                >
+                  <Sparkles className="w-4 h-4 text-[var(--accent)]" />
+                  Studio học tiếng Nhật cho người tự học nghiêm túc
+                </motion.div>
+
+                <motion.h1
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.08 }}
+                  className="mt-6 max-w-4xl font-serif text-5xl leading-tight sm:text-6xl lg:text-7xl"
+                >
+                  Học JLPT theo cách có cấu trúc,
+                  <span className="block text-[var(--accent-strong)]">đẹp mắt và đỡ rối hơn.</span>
+                </motion.h1>
+
+                <motion.p
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.16 }}
+                  className="mt-6 max-w-2xl text-lg text-soft leading-8"
+                >
+                  NihongoMaster gom bài học, tra cứu, ôn tập và lộ trình vào cùng một không gian.
+                  Bạn không cần học kiểu chắp vá nữa, chỉ cần mở ra và đi tiếp đúng nhịp.
+                </motion.p>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.24 }}
+                  className="mt-8 flex flex-col sm:flex-row gap-4"
+                >
+                  <button
+                    onClick={handleStart}
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-7 py-4 font-semibold text-[var(--accent-ink)] accent-ring"
+                  >
+                    {user ? 'Vào dashboard' : 'Bắt đầu học'}
+                    <ArrowRight className="w-5 h-5" />
+                  </button>
+                  <a
+                    href="#collections"
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--border-color)] bg-white/70 px-7 py-4 font-semibold"
+                  >
+                    Xem kho nội dung
+                  </a>
+                </motion.div>
+              </div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="space-y-4"
               >
-                {user ? 'Vào bảng điều khiển' : 'Bắt đầu học miễn phí'}
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            </motion.div>
+                <div className="surface-card rounded-[32px] p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-sm uppercase tracking-[0.2em] text-soft">Collection</p>
+                      <p className="mt-3 font-serif text-3xl">Kho học liệu đang sẵn sàng</p>
+                    </div>
+                    <div className="h-12 w-12 rounded-2xl bg-orange-100 flex items-center justify-center">
+                      <Layers3 className="w-6 h-6 text-[var(--accent-strong)]" />
+                    </div>
+                  </div>
+                  <div className="mt-8 grid grid-cols-3 gap-3">
+                    <div className="rounded-3xl bg-[#f6efe6] p-4">
+                      <p className="text-3xl font-bold">{collectionStats.vocabulary}</p>
+                      <p className="mt-1 text-sm text-soft">mục từ</p>
+                    </div>
+                    <div className="rounded-3xl bg-[#efe9ff] p-4">
+                      <p className="text-3xl font-bold">{collectionStats.grammar}</p>
+                      <p className="mt-1 text-sm text-soft">mẫu ngữ pháp</p>
+                    </div>
+                    <div className="rounded-3xl bg-[#e7f4ee] p-4">
+                      <p className="text-3xl font-bold">{collectionStats.kanji}</p>
+                      <p className="mt-1 text-sm text-soft">kanji</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="surface-card rounded-[32px] p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="h-11 w-11 rounded-2xl bg-slate-900 text-white flex items-center justify-center">
+                      <Target className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="font-semibold">Roadmap 5 tầng</p>
+                      <p className="text-sm text-soft">N5 đến N1, mỗi chặng đều có focus rõ ràng</p>
+                    </div>
+                  </div>
+                  <div className="mt-6 space-y-3">
+                    {dashboardRoadmap.slice(0, 3).map((item) => (
+                      <div key={item.level} className="flex items-center justify-between rounded-2xl bg-black/5 px-4 py-3">
+                        <div>
+                          <p className="font-semibold">{item.level}</p>
+                          <p className="text-sm text-soft">{item.focus}</p>
+                        </div>
+                        <ArrowRight className="w-4 h-4 text-soft" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">Mọi thứ bạn cần để đỗ JLPT</h2>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Không cần tìm kiếm tài liệu rải rác. NihongoMaster tổng hợp tất cả kiến thức và công cụ ôn luyện vào một nơi duy nhất.
-            </p>
+      <section id="collections" className="px-4 sm:px-6 lg:px-8 py-10">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8">
+            <p className="text-sm uppercase tracking-[0.24em] text-soft">Hệ thống nội dung</p>
+            <h2 className="mt-3 font-serif text-4xl">Không chỉ đẹp, mà phải học được lâu dài</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid lg:grid-cols-3 gap-6">
             {features.map((feature, index) => (
               <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
+                key={feature.title}
+                initial={{ opacity: 0, y: 18 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:shadow-xl hover:shadow-slate-200/50 transition-all group"
+                transition={{ delay: index * 0.08 }}
+                className="surface-card rounded-[32px] p-7"
               >
-                <div className={`w-14 h-14 rounded-2xl ${feature.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                  <feature.icon className="w-7 h-7" />
+                <div className="h-14 w-14 rounded-2xl bg-black text-white flex items-center justify-center">
+                  <feature.icon className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3">{feature.title}</h3>
-                <p className="text-slate-600 leading-relaxed">{feature.description}</p>
+                <h3 className="mt-8 text-2xl font-semibold">{feature.title}</h3>
+                <p className="mt-4 text-soft leading-7">{feature.description}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Roadmap Section */}
-      <section className="py-24 bg-slate-900 text-white overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Lộ trình học tập rõ ràng</h2>
-            <p className="text-slate-400 max-w-2xl mx-auto text-lg">
-              Theo dõi tiến độ của bạn qua từng cấp độ. Từ người mới bắt đầu đến khi thành thạo.
-            </p>
-          </div>
-
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8 relative z-10">
-            {['N5', 'N4', 'N3', 'N2', 'N1'].map((level, index) => (
-              <motion.div
-                key={level}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="flex-1 w-full relative"
-              >
-                <div className="bg-slate-800 border border-slate-700 p-6 rounded-2xl text-center relative z-10 hover:bg-slate-700 transition-colors cursor-pointer group">
-                  <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-indigo-400 to-purple-400 mb-2 group-hover:scale-110 transition-transform">
-                    {level}
-                  </div>
-                  <div className="text-sm text-slate-400 font-medium">
-                    {index === 0 ? 'Nhập môn' : index === 1 ? 'Sơ cấp' : index === 2 ? 'Trung cấp' : index === 3 ? 'Thượng cấp' : 'Cao cấp'}
-                  </div>
-                </div>
-                {index < 4 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-slate-700 -translate-y-1/2 z-0"></div>
-                )}
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xl">
-              N
+      <section className="px-4 sm:px-6 lg:px-8 py-10 pb-20">
+        <div className="max-w-7xl mx-auto surface-card rounded-[40px] p-8 sm:p-10 lg:p-14">
+          <div className="grid lg:grid-cols-[0.85fr_1.15fr] gap-8 items-start">
+            <div>
+              <p className="text-sm uppercase tracking-[0.24em] text-soft">Lộ trình JLPT</p>
+              <h2 className="mt-3 font-serif text-4xl">Thiết kế để bạn luôn biết bước tiếp theo</h2>
+              <p className="mt-5 text-soft leading-7">
+                Mỗi level không chỉ là tên gọi. Nó có mục tiêu, loại kỹ năng cần ưu tiên và độ phủ nội dung tương ứng.
+              </p>
             </div>
-            <span className="font-bold text-xl text-slate-900">NihongoMaster</span>
+            <div className="grid sm:grid-cols-2 xl:grid-cols-5 gap-4">
+              {dashboardRoadmap.map((item) => (
+                <div key={item.level} className="rounded-[28px] bg-black/5 p-5">
+                  <p className="text-xs uppercase tracking-[0.18em] text-soft">{item.focus}</p>
+                  <p className="mt-4 font-serif text-3xl">{item.level}</p>
+                  <p className="mt-4 text-sm text-soft leading-6">{item.target}</p>
+                </div>
+              ))}
+            </div>
           </div>
-          <p className="text-slate-500 text-sm">
-            &copy; {new Date().getFullYear()} NihongoMaster. All rights reserved.
-          </p>
         </div>
-      </footer>
+      </section>
     </div>
   );
 }

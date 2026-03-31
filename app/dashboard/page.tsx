@@ -2,11 +2,32 @@
 
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { motion } from 'motion/react';
-import { BookOpen, BrainCircuit, GraduationCap, Flame, Target, ChevronRight, PlayCircle, CalendarDays, BarChart2 } from 'lucide-react';
 import Link from 'next/link';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import {
+  ArrowUpRight,
+  BarChart3,
+  BookOpen,
+  BrainCircuit,
+  CalendarDays,
+  Flame,
+  GraduationCap,
+  PlayCircle,
+  Target,
+} from 'lucide-react';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { collectionStats, dashboardRoadmap, sampleGrammar, sampleKanji, sampleVocabulary } from '../../lib/sampleData';
+
+const weeklyData = [
+  { name: 'T2', words: 18, grammar: 4, kanji: 7 },
+  { name: 'T3', words: 24, grammar: 6, kanji: 12 },
+  { name: 'T4', words: 16, grammar: 5, kanji: 8 },
+  { name: 'T5', words: 28, grammar: 7, kanji: 13 },
+  { name: 'T6', words: 22, grammar: 4, kanji: 10 },
+  { name: 'T7', words: 31, grammar: 8, kanji: 15 },
+  { name: 'CN', words: 14, grammar: 3, kanji: 6 },
+];
 
 export default function Dashboard() {
   const { user, userProfile, loading } = useAuth();
@@ -16,282 +37,221 @@ export default function Dashboard() {
     if (!loading && !user) {
       router.push('/');
     }
-  }, [user, loading, router]);
+  }, [loading, router, user]);
 
   if (loading || !userProfile) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="h-12 w-12 rounded-full border-4 border-black/10 border-t-[var(--accent)] animate-spin" />
       </div>
     );
   }
 
-  const weeklyData = [
-    { name: 'T2', words: 20, grammar: 5, kanji: 10 },
-    { name: 'T3', words: 25, grammar: 3, kanji: 15 },
-    { name: 'T4', words: 15, grammar: 8, kanji: 5 },
-    { name: 'T5', words: 30, grammar: 2, kanji: 20 },
-    { name: 'T6', words: 22, grammar: 6, kanji: 12 },
-    { name: 'T7', words: 40, grammar: 10, kanji: 25 },
-    { name: 'CN', words: 10, grammar: 0, kanji: 5 },
+  const stats = [
+    {
+      label: 'Từ vựng',
+      count: sampleVocabulary.filter((item) => item.level === userProfile.targetLevel).length,
+      total: collectionStats.vocabulary,
+      icon: BookOpen,
+      tone: 'bg-[#f6efe6] text-[#8e3f22]',
+    },
+    {
+      label: 'Ngữ pháp',
+      count: sampleGrammar.filter((item) => item.level === userProfile.targetLevel).length,
+      total: collectionStats.grammar,
+      icon: BrainCircuit,
+      tone: 'bg-[#efe9ff] text-[#5b39aa]',
+    },
+    {
+      label: 'Kanji',
+      count: sampleKanji.filter((item) => item.level === userProfile.targetLevel).length,
+      total: collectionStats.kanji,
+      icon: GraduationCap,
+      tone: 'bg-[#e7f4ee] text-[#1d7b55]',
+    },
   ];
 
-  const stats = [
-    { label: 'Từ vựng', count: 120, total: 1000, icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-100' },
-    { label: 'Ngữ pháp', count: 45, total: 200, icon: BrainCircuit, color: 'text-purple-600', bg: 'bg-purple-100' },
-    { label: 'Kanji', count: 80, total: 500, icon: GraduationCap, color: 'text-emerald-600', bg: 'bg-emerald-100' },
+  const nextLessons = [
+    { href: '/vocabulary', title: `Từ vựng ${userProfile.targetLevel}`, note: 'Bổ sung vốn từ nền tảng theo chủ đề học tập và công việc.' },
+    { href: '/grammar', title: `Ngữ pháp ${userProfile.targetLevel}`, note: 'Ôn lại mẫu trọng tâm trước khi sang bài mới.' },
+    { href: '/kanji', title: `Kanji ${userProfile.targetLevel}`, note: 'Tập trung vào chữ xuất hiện nhiều trong đề JLPT.' },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">
-              Chào buổi sáng, {userProfile.displayName}! 👋
-            </h1>
-            <p className="text-slate-600">
-              Hôm nay là một ngày tuyệt vời để học tiếng Nhật. Bạn đang hướng tới mục tiêu {userProfile.targetLevel}.
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-                <Flame className="w-6 h-6 text-orange-500" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-slate-500">Chuỗi ngày học</p>
-                <p className="text-2xl font-bold text-slate-900">{userProfile.streak} <span className="text-sm font-normal text-slate-500">ngày</span></p>
-              </div>
-            </div>
-            <div className="w-px h-10 bg-slate-200 mx-2"></div>
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                <Target className="w-6 h-6 text-indigo-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-slate-500">Mục tiêu ngày</p>
-                <p className="text-2xl font-bold text-slate-900">0/{userProfile.dailyGoal} <span className="text-sm font-normal text-slate-500">từ</span></p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Main Content Area */}
-          <div className="lg:col-span-2 space-y-8">
-            
-            {/* Continue Learning Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-8 text-white shadow-xl shadow-indigo-200 relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-              
-              <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-                <div>
-                  <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-xs font-semibold tracking-wider uppercase mb-4 backdrop-blur-sm">
-                    Tiếp tục học
-                  </span>
-                  <h2 className="text-2xl font-bold mb-2">Từ vựng {userProfile.targetLevel} - Bài 5</h2>
-                  <p className="text-indigo-100 max-w-md">
-                    Bạn đã hoàn thành 60% bài học này. Hãy tiếp tục để hoàn thành mục tiêu hôm nay nhé!
-                  </p>
-                </div>
-                
-                <button className="flex-shrink-0 w-16 h-16 bg-white text-indigo-600 rounded-full flex items-center justify-center hover:scale-105 transition-transform shadow-lg">
-                  <PlayCircle className="w-8 h-8" />
-                </button>
-              </div>
-            </motion.div>
-
-            {/* Progress Overview */}
+    <div className="px-4 sm:px-6 lg:px-8 pb-16">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <section className="surface-panel rounded-[40px] p-6 sm:p-8 lg:p-10 overflow-hidden relative">
+          <div className="absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_top_right,rgba(190,91,53,0.18),transparent_52%)] pointer-events-none" />
+          <div className="relative z-10 grid lg:grid-cols-[1.15fr_0.85fr] gap-6 items-start">
             <div>
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-slate-900">Tiến độ {userProfile.targetLevel}</h3>
-                <Link href="/progress" className="text-sm font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
-                  Xem chi tiết <ChevronRight className="w-4 h-4" />
-                </Link>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                {stats.map((stat, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center`}>
-                        <stat.icon className={`w-5 h-5 ${stat.color}`} />
-                      </div>
-                      <span className="text-sm font-medium text-slate-500">{Math.round((stat.count / stat.total) * 100)}%</span>
-                    </div>
-                    <h4 className="text-slate-600 font-medium mb-1">{stat.label}</h4>
-                    <div className="flex items-end gap-1">
-                      <span className="text-2xl font-bold text-slate-900">{stat.count}</span>
-                      <span className="text-sm text-slate-500 mb-1">/ {stat.total}</span>
-                    </div>
-                    
-                    <div className="w-full bg-slate-100 h-2 rounded-full mt-4 overflow-hidden">
-                      <div 
-                        className={`h-full rounded-full ${stat.color.replace('text-', 'bg-')}`} 
-                        style={{ width: `${(stat.count / stat.total) * 100}%` }}
-                      ></div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+              <p className="text-sm uppercase tracking-[0.22em] text-soft">Dashboard cá nhân</p>
+              <h1 className="mt-4 font-serif text-4xl sm:text-5xl leading-tight">
+                Chào {userProfile.displayName}, hôm nay mình tiếp tục {userProfile.targetLevel} nhé.
+              </h1>
+              <p className="mt-5 max-w-2xl text-soft leading-7">
+                Không cần làm thật nhiều trong một ngày. Chỉ cần hoàn thành nhịp học vừa đủ, rồi ôn lại đúng lúc.
+              </p>
 
-              {/* Weekly Chart */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm mb-8"
-              >
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
-                    <BarChart2 className="w-5 h-5 text-indigo-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900">Hoạt động tuần này</h3>
-                    <p className="text-sm text-slate-500">Số lượng mục đã học mỗi ngày</p>
-                  </div>
-                </div>
-                
-                <div className="h-64 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={weeklyData}
-                      margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                      <XAxis 
-                        dataKey="name" 
-                        axisLine={false} 
-                        tickLine={false} 
-                        tick={{ fill: '#64748b', fontSize: 12 }} 
-                        dy={10}
-                      />
-                      <YAxis 
-                        axisLine={false} 
-                        tickLine={false} 
-                        tick={{ fill: '#64748b', fontSize: 12 }} 
-                      />
-                      <Tooltip 
-                        cursor={{ fill: '#f1f5f9' }}
-                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                      />
-                      <Bar dataKey="words" name="Từ vựng" stackId="a" fill="#4f46e5" radius={[0, 0, 4, 4]} />
-                      <Bar dataKey="grammar" name="Ngữ pháp" stackId="a" fill="#9333ea" />
-                      <Bar dataKey="kanji" name="Kanji" stackId="a" fill="#10b981" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Recommended Lessons */}
-            <div>
-              <h3 className="text-xl font-bold text-slate-900 mb-6">Gợi ý cho bạn</h3>
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 hover:border-indigo-100 hover:shadow-sm transition-all cursor-pointer group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
-                        <BookOpen className="w-6 h-6 text-slate-400 group-hover:text-indigo-600 transition-colors" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">Ngữ pháp bài {i + 5}</h4>
-                        <p className="text-sm text-slate-500">15 mẫu câu mới • 20 phút</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-indigo-600 transition-colors" />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-          </div>
-
-          {/* Sidebar Area */}
-          <div className="space-y-8">
-            
-            {/* Review Queue (SRS) */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm"
-            >
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center">
-                  <BrainCircuit className="w-5 h-5 text-rose-600" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-900">Đến hạn ôn tập</h3>
-                  <p className="text-sm text-slate-500">Hôm nay</p>
-                </div>
-              </div>
-              
-              <div className="flex flex-col items-center justify-center py-6">
-                <div className="text-5xl font-black text-slate-900 mb-2">42</div>
-                <p className="text-slate-500 font-medium mb-6">từ vựng & ngữ pháp</p>
-                
-                <Link 
+              <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                <Link
                   href="/flashcards"
-                  className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold text-center hover:bg-slate-800 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-6 py-3.5 font-semibold text-[var(--accent-ink)] accent-ring"
                 >
-                  Bắt đầu ôn tập
+                  <PlayCircle className="w-5 h-5" />
+                  Bắt đầu phiên ôn tập
+                </Link>
+                <Link
+                  href="/quizzes"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--border-color)] bg-white/70 px-6 py-3.5 font-semibold"
+                >
+                  Làm mini quiz
+                  <ArrowUpRight className="w-4 h-4" />
                 </Link>
               </div>
-            </motion.div>
+            </div>
 
-            {/* Study Plan Mini */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm"
-            >
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
-                  <CalendarDays className="w-5 h-5 text-amber-600" />
+            <div className="grid gap-4">
+              <div className="surface-card rounded-[32px] p-5 grid grid-cols-2 gap-4">
+                <div className="rounded-[28px] bg-black text-white p-5">
+                  <div className="flex items-center gap-3">
+                    <Flame className="w-5 h-5" />
+                    <span className="text-sm uppercase tracking-[0.15em] text-white/70">Streak</span>
+                  </div>
+                  <p className="mt-6 text-4xl font-bold">{userProfile.streak}</p>
+                  <p className="text-sm text-white/70 mt-1">ngày liên tục</p>
+                </div>
+                <div className="rounded-[28px] bg-[#f6efe6] p-5">
+                  <div className="flex items-center gap-3 text-[var(--accent-strong)]">
+                    <Target className="w-5 h-5" />
+                    <span className="text-sm uppercase tracking-[0.15em]">Daily Goal</span>
+                  </div>
+                  <p className="mt-6 text-4xl font-bold">0/{userProfile.dailyGoal}</p>
+                  <p className="text-sm text-soft mt-1">mục học hôm nay</p>
+                </div>
+              </div>
+
+              <div className="surface-card rounded-[32px] p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.15em] text-soft">Mục tiêu hiện tại</p>
+                    <p className="mt-2 text-2xl font-semibold">JLPT {userProfile.targetLevel}</p>
+                  </div>
+                  <CalendarDays className="w-6 h-6 text-soft" />
+                </div>
+                <div className="mt-5 space-y-3">
+                  {dashboardRoadmap
+                    .filter((item) => item.level === userProfile.targetLevel)
+                    .map((item) => (
+                      <div key={item.level} className="rounded-[24px] bg-black/5 px-4 py-3">
+                        <p className="font-medium">{item.focus}</p>
+                        <p className="text-sm text-soft mt-1">{item.target}</p>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="grid lg:grid-cols-[1.1fr_0.9fr] gap-6">
+          <div className="surface-card rounded-[36px] p-6 sm:p-7">
+            <div className="flex items-center justify-between gap-4 mb-6">
+              <div>
+                <p className="text-sm uppercase tracking-[0.18em] text-soft">Mức độ phủ nội dung</p>
+                <h2 className="mt-2 font-serif text-3xl">Tài nguyên cho {userProfile.targetLevel}</h2>
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-3 gap-4">
+              {stats.map((stat) => (
+                <motion.div key={stat.label} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="rounded-[28px] bg-black/5 p-5">
+                  <div className={`h-12 w-12 rounded-2xl flex items-center justify-center ${stat.tone}`}>
+                    <stat.icon className="w-5 h-5" />
+                  </div>
+                  <p className="mt-6 text-sm uppercase tracking-[0.15em] text-soft">{stat.label}</p>
+                  <p className="mt-2 text-3xl font-bold">{stat.count}</p>
+                  <p className="text-sm text-soft mt-1">trên tổng {stat.total} mục hiện có</p>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="mt-8 rounded-[30px] bg-[#fffaf2] p-5 border border-[var(--border-color)]">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-11 w-11 rounded-2xl bg-slate-900 text-white flex items-center justify-center">
+                  <BarChart3 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900">Kế hoạch học tập</h3>
-                  <p className="text-sm text-slate-500">JLPT {userProfile.targetLevel} - Tháng 12</p>
+                  <p className="font-semibold">Hoạt động 7 ngày</p>
+                  <p className="text-sm text-soft">Theo dõi nhịp học để tránh học quá dồn</p>
                 </div>
               </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                  <p className="text-sm text-slate-700 flex-1">Học 20 từ vựng mới</p>
-                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">Xong</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-slate-300"></div>
-                  <p className="text-sm text-slate-700 flex-1">Học 3 ngữ pháp mới</p>
-                  <span className="text-xs font-medium text-slate-500">Chưa làm</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-slate-300"></div>
-                  <p className="text-sm text-slate-700 flex-1">Làm 1 bài test nhỏ</p>
-                  <span className="text-xs font-medium text-slate-500">Chưa làm</span>
-                </div>
-              </div>
-            </motion.div>
 
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={weeklyData} margin={{ top: 12, right: 8, left: -26, bottom: 0 }}>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="rgba(53,42,34,0.12)" />
+                    <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: '#6b5f56', fontSize: 12 }} />
+                    <YAxis tickLine={false} axisLine={false} tick={{ fill: '#6b5f56', fontSize: 12 }} />
+                    <Tooltip
+                      cursor={{ fill: 'rgba(0,0,0,0.04)' }}
+                      contentStyle={{
+                        borderRadius: '18px',
+                        border: '1px solid rgba(53,42,34,0.08)',
+                        boxShadow: '0 18px 40px rgba(49,34,17,0.12)',
+                      }}
+                    />
+                    <Bar dataKey="words" stackId="a" fill="#be5b35" radius={[0, 0, 10, 10]} />
+                    <Bar dataKey="grammar" stackId="a" fill="#7c3aed" />
+                    <Bar dataKey="kanji" stackId="a" fill="#0f9f6e" radius={[10, 10, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </div>
-        </div>
+
+          <div className="space-y-6">
+            <div className="surface-card rounded-[36px] p-6">
+              <p className="text-sm uppercase tracking-[0.18em] text-soft">Tiếp tục học</p>
+              <h2 className="mt-2 font-serif text-3xl">Bài nên mở tiếp theo</h2>
+              <div className="mt-6 space-y-3">
+                {nextLessons.map((lesson) => (
+                  <Link
+                    key={lesson.href}
+                    href={lesson.href}
+                    className="block rounded-[26px] bg-black/5 px-5 py-4 hover:bg-black/7"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="font-semibold">{lesson.title}</p>
+                        <p className="text-sm text-soft mt-2 leading-6">{lesson.note}</p>
+                      </div>
+                      <ArrowUpRight className="w-4 h-4 mt-1 text-soft" />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div className="surface-card rounded-[36px] p-6">
+              <p className="text-sm uppercase tracking-[0.18em] text-soft">Lộ trình tổng thể</p>
+              <div className="mt-5 space-y-3">
+                {dashboardRoadmap.map((item) => (
+                  <div
+                    key={item.level}
+                    className={`rounded-[24px] px-4 py-3 ${
+                      item.level === userProfile.targetLevel ? 'bg-[var(--accent)] text-[var(--accent-ink)]' : 'bg-black/5'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <p className="font-semibold">{item.level}</p>
+                      <p className="text-sm">{item.focus}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );

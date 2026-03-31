@@ -1,47 +1,69 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
-import { BookOpen, LogOut, User, Menu, X, BrainCircuit, GraduationCap, LayoutDashboard, Mic, Book } from 'lucide-react';
+import {
+  Book,
+  BookOpen,
+  BrainCircuit,
+  GraduationCap,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Mic,
+  Shield,
+  Sparkles,
+  User,
+  X,
+} from 'lucide-react';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import GlobalSearch from './GlobalSearch';
 import ThemeToggle from './ThemeToggle';
 
+const navLinks = [
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Từ vựng', href: '/vocabulary', icon: BookOpen },
+  { name: 'Ngữ pháp', href: '/grammar', icon: BrainCircuit },
+  { name: 'Kanji', href: '/kanji', icon: GraduationCap },
+  { name: 'Giao tiếp', href: '/speaking', icon: Mic },
+  { name: 'Sổ tay', href: '/notebooks', icon: Book },
+  { name: 'Ôn tập', href: '/flashcards', icon: Sparkles },
+];
+
 export default function Navbar() {
-  const { user, userProfile, signInWithGoogle, logout } = useAuth();
+  const pathname = usePathname();
+  const { user, userProfile, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const navLinks = [
-    { name: 'Từ vựng', href: '/vocabulary', icon: BookOpen },
-    { name: 'Ngữ pháp', href: '/grammar', icon: BrainCircuit },
-    { name: 'Kanji', href: '/kanji', icon: GraduationCap },
-    { name: 'Giao tiếp', href: '/speaking', icon: Mic },
-    { name: 'Sổ tay', href: '/notebooks', icon: Book },
-    { name: 'Ôn tập', href: '/flashcards', icon: BrainCircuit },
-    { name: 'Thi thử', href: '/quizzes', icon: BrainCircuit },
-  ];
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xl">
-              N
+    <nav className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-5 pt-3">
+      <div className="surface-panel max-w-7xl mx-auto rounded-[28px] px-4 sm:px-5 h-16 flex items-center justify-between">
+        <div className="flex items-center gap-3 sm:gap-8 min-w-0">
+          <Link href="/" className="flex items-center gap-3 min-w-0">
+            <div className="h-10 w-10 rounded-2xl bg-[var(--accent)] text-[var(--accent-ink)] flex items-center justify-center shadow-lg shadow-orange-900/10">
+              <span className="font-bold text-lg">日</span>
             </div>
-            <span className="font-bold text-xl tracking-tight text-slate-900 hidden sm:block">
-              NihongoMaster
-            </span>
+            <div className="hidden sm:block min-w-0">
+              <p className="font-serif text-lg font-bold leading-none">NihongoMaster</p>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-soft mt-1">Learning Studio</p>
+            </div>
           </Link>
 
           {user && (
-            <div className="hidden md:flex items-center gap-6">
+            <div className="hidden lg:flex items-center gap-2">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors flex items-center gap-2"
+                  className={`inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium ${
+                    isActive(link.href)
+                      ? 'bg-[var(--accent)] text-[var(--accent-ink)]'
+                      : 'text-soft hover:bg-black/5 hover:text-[var(--text-color)]'
+                  }`}
                 >
                   <link.icon className="w-4 h-4" />
                   {link.name}
@@ -51,104 +73,110 @@ export default function Navbar() {
           )}
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <GlobalSearch />
           <ThemeToggle />
+
           {user ? (
-            <div className="hidden md:flex items-center gap-4">
-              <GlobalSearch />
+            <div className="hidden md:flex items-center gap-2">
               <Link
-                href="/dashboard"
-                className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors flex items-center gap-2"
+                href="/profile"
+                className="surface-card rounded-full px-4 py-2 text-sm font-medium text-soft hover:text-[var(--text-color)]"
               >
-                <LayoutDashboard className="w-4 h-4" />
-                Bảng điều khiển
+                {userProfile?.displayName || user.displayName || 'Học viên'}
               </Link>
-              <div className="h-6 w-px bg-slate-200"></div>
-              <div className="flex items-center gap-3">
-                {userProfile?.role === 'admin' && (
-                  <Link href="/admin" className="text-sm font-medium text-amber-600 hover:text-amber-700 transition-colors">
-                    Admin
-                  </Link>
-                )}
-                <Link href="/profile" className="text-sm font-medium text-slate-700 hover:text-indigo-600 transition-colors">
-                  {userProfile?.displayName || user.displayName}
-                </Link>
-                <button
-                  onClick={logout}
-                  className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
-                  title="Đăng xuất"
+              {userProfile?.role === 'admin' && (
+                <Link
+                  href="/admin"
+                  className="inline-flex items-center gap-2 rounded-full bg-amber-100/80 px-3 py-2 text-sm font-semibold text-amber-800"
                 >
-                  <LogOut className="w-5 h-5" />
-                </button>
-              </div>
+                  <Shield className="w-4 h-4" />
+                  Admin
+                </Link>
+              )}
+              <button
+                onClick={logout}
+                className="surface-card rounded-full p-2.5 text-soft hover:text-rose-600"
+                title="Đăng xuất"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
           ) : (
             <Link
               href="/login"
-              className="hidden md:flex items-center gap-2 bg-indigo-600 text-white px-5 py-2 rounded-full font-medium hover:bg-indigo-700 transition-colors shadow-sm"
+              className="hidden md:inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent-ink)]"
             >
               <User className="w-4 h-4" />
               Đăng nhập
             </Link>
           )}
 
-          <div className="flex items-center gap-2 md:hidden">
-            <GlobalSearch />
-            <button
-              className="p-2 text-slate-600"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
+          <button
+            className="lg:hidden surface-card rounded-full p-2.5 text-soft"
+            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            aria-label="Mở menu"
+          >
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
       </div>
 
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="md:hidden absolute top-16 left-0 right-0 bg-white border-b border-slate-200 shadow-lg"
+            exit={{ opacity: 0, y: -12 }}
+            className="lg:hidden max-w-7xl mx-auto mt-3"
           >
-            <div className="p-4 flex flex-col gap-4">
-              {user ? (
-                <>
-                  <Link href="/dashboard" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 text-slate-700 font-medium" onClick={() => setIsMobileMenuOpen(false)}>
-                    <LayoutDashboard className="w-5 h-5 text-indigo-600" /> Bảng điều khiển
-                  </Link>
-                  {navLinks.map((link) => (
+            <div className="surface-panel rounded-[28px] p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {user ? (
+                  <>
+                    {navLinks.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={`flex items-center gap-3 rounded-2xl px-4 py-3 ${
+                          isActive(link.href)
+                            ? 'bg-[var(--accent)] text-[var(--accent-ink)]'
+                            : 'surface-card text-soft hover:text-[var(--text-color)]'
+                        }`}
+                      >
+                        <link.icon className="w-5 h-5" />
+                        {link.name}
+                      </Link>
+                    ))}
                     <Link
-                      key={link.href}
-                      href={link.href}
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 text-slate-700 font-medium"
+                      href="/profile"
                       onClick={() => setIsMobileMenuOpen(false)}
+                      className="surface-card rounded-2xl px-4 py-3 text-soft"
                     >
-                      <link.icon className="w-5 h-5 text-indigo-600" /> {link.name}
+                      {userProfile?.displayName || user.displayName || 'Học viên'}
                     </Link>
-                  ))}
-                  {userProfile?.role === 'admin' && (
-                    <Link href="/admin" className="flex items-center gap-3 p-3 rounded-lg hover:bg-amber-50 text-amber-700 font-medium" onClick={() => setIsMobileMenuOpen(false)}>
-                      <User className="w-5 h-5 text-amber-600" /> Quản trị hệ thống
-                    </Link>
-                  )}
-                  <button
-                    onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 text-red-600 font-medium mt-2 border-t border-slate-100"
+                    <button
+                      onClick={() => {
+                        logout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="rounded-2xl px-4 py-3 text-left bg-rose-50 text-rose-700"
+                    >
+                      Đăng xuất
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] px-4 py-3 font-semibold text-[var(--accent-ink)]"
                   >
-                    <LogOut className="w-5 h-5" /> Đăng xuất
-                  </button>
-                </>
-              ) : (
-                <Link
-                  href="/login"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-5 py-3 rounded-xl font-medium"
-                >
-                  <User className="w-5 h-5" /> Đăng nhập
-                </Link>
-              )}
+                    <User className="w-5 h-5" />
+                    Đăng nhập
+                  </Link>
+                )}
+              </div>
             </div>
           </motion.div>
         )}

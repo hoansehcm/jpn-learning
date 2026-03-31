@@ -1,109 +1,99 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Search, Bookmark, CheckCircle, BrainCircuit, ChevronRight } from 'lucide-react';
+import { BrainCircuit, ChevronRight, Search } from 'lucide-react';
 import Link from 'next/link';
-import { sampleGrammar } from '../../lib/sampleData';
-import { useAuth } from '../../contexts/AuthContext';
+import { jlptLevels, sampleGrammar } from '../../lib/sampleData';
 
 export default function GrammarList() {
-  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('All');
-  const levels = ['All', 'N5', 'N4', 'N3', 'N2', 'N1'];
-  const grammarList = sampleGrammar.filter(g => {
-    const matchesLevel = selectedLevel === 'All' || g.level === selectedLevel;
-    const lower = searchTerm.toLowerCase();
-    const matchesSearch = !searchTerm || 
-      g.pattern.toLowerCase().includes(lower) || 
-      g.meaning.toLowerCase().includes(lower) ||
-      g.explanation.toLowerCase().includes(lower);
+  const levels = ['All', ...jlptLevels];
+
+  const grammarList = sampleGrammar.filter((item) => {
+    const matchesLevel = selectedLevel === 'All' || item.level === selectedLevel;
+    const query = searchTerm.toLowerCase();
+    const matchesSearch =
+      query.length === 0 ||
+      [item.pattern, item.meaning, item.explanation].some((field) => field.toLowerCase().includes(query));
+
     return matchesLevel && matchesSearch;
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Ngữ pháp tiếng Nhật</h1>
-          <p className="text-slate-600">Học và ôn tập các cấu trúc ngữ pháp theo cấp độ JLPT.</p>
-        </div>
+    <div className="px-4 sm:px-6 lg:px-8 pb-16">
+      <div className="max-w-6xl mx-auto space-y-6">
+        <section className="surface-panel rounded-[40px] p-6 sm:p-8 lg:p-10">
+          <p className="text-sm uppercase tracking-[0.22em] text-soft">Grammar Atlas</p>
+          <h1 className="mt-3 font-serif text-4xl sm:text-5xl">Ngữ pháp được gom theo độ khó và ngữ cảnh</h1>
+          <p className="mt-4 max-w-3xl text-soft leading-7">
+            Không chỉ liệt kê công thức. Mỗi mẫu đều có nghĩa ngắn gọn, giải thích cách dùng và ví dụ dễ đưa vào luyện đọc hoặc hội thoại.
+          </p>
+        </section>
 
-        {/* Search and Filters */}
-        <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-8 flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <input 
-              type="text" 
-              placeholder="Tìm kiếm cấu trúc hoặc ý nghĩa..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
-            />
+        <section className="surface-card rounded-[32px] p-4 sm:p-5">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-soft" />
+              <input
+                type="text"
+                placeholder="Tìm 〜ようにする, đối với, càng... càng..."
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                className="w-full rounded-[22px] border border-[var(--border-color)] bg-[#fffaf2] pl-12 pr-4 py-3.5 outline-none focus:border-violet-500"
+              />
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {levels.map((level) => (
+                <button
+                  key={level}
+                  onClick={() => setSelectedLevel(level)}
+                  className={`rounded-full px-4 py-2.5 whitespace-nowrap text-sm font-medium ${
+                    selectedLevel === level ? 'bg-violet-600 text-white' : 'bg-black/5 text-soft'
+                  }`}
+                >
+                  {level === 'All' ? 'Tất cả' : level}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
-            {levels.map(level => (
-              <button
-                key={level}
-                onClick={() => setSelectedLevel(level)}
-                className={`px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-colors ${
-                  selectedLevel === level 
-                    ? 'bg-purple-600 text-white' 
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                {level === 'All' ? 'Tất cả' : level}
-              </button>
-            ))}
-          </div>
-        </div>
+        </section>
 
-        {/* Grammar List */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {grammarList.length > 0 ? (
-            grammarList.map((grammar, index) => (
-              <motion.div
-                key={grammar.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-purple-200 transition-all group flex flex-col h-full"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <span className="px-3 py-1 bg-purple-50 text-purple-700 rounded-lg text-sm font-bold">{grammar.level}</span>
-                  <div className="flex items-center gap-2">
-                    <button className="p-2 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-full transition-colors" title="Lưu ngữ pháp">
-                      <Bookmark className="w-5 h-5" />
-                    </button>
-                    <button className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-full transition-colors" title="Đánh dấu đã học">
-                      <CheckCircle className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-                
-                <h3 className="text-2xl font-black text-slate-900 mb-2 group-hover:text-purple-600 transition-colors">{grammar.pattern}</h3>
-                <p className="text-lg text-slate-700 font-medium mb-4 flex-1">{grammar.meaning}</p>
-                
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-between mt-auto">
-                  <span className="text-sm text-slate-500 line-clamp-1">{grammar.explanation}</span>
-                  <Link 
-                    href={`/grammar/${grammar.id}`}
-                    className="ml-4 p-2 bg-slate-100 text-slate-600 hover:bg-purple-600 hover:text-white rounded-xl transition-colors flex items-center justify-center flex-shrink-0"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </Link>
-                </div>
-              </motion.div>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-12 bg-white rounded-2xl border border-slate-200">
-              <p className="text-slate-500 text-lg">Không tìm thấy ngữ pháp nào phù hợp.</p>
+        <section className="grid md:grid-cols-2 gap-5">
+          {grammarList.map((item, index) => (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.03 }}
+              className="surface-card rounded-[30px] p-6 flex flex-col"
+            >
+              <div className="flex items-center justify-between gap-4">
+                <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700">{item.level}</span>
+                <BrainCircuit className="w-5 h-5 text-violet-500" />
+              </div>
+              <h2 className="mt-5 text-3xl font-bold">{item.pattern}</h2>
+              <p className="mt-3 text-lg">{item.meaning}</p>
+              <p className="mt-4 text-soft leading-7 flex-1">{item.explanation}</p>
+              <div className="mt-5 rounded-[22px] bg-black/5 p-4">
+                <p className="font-medium">{item.examples[0].ja}</p>
+                <p className="text-sm text-soft mt-2">{item.examples[0].vi}</p>
+              </div>
+              <Link href={`/grammar/${item.id}`} className="mt-5 inline-flex items-center gap-2 text-violet-700 font-semibold">
+                Xem bài đầy đủ
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            </motion.div>
+          ))}
+
+          {grammarList.length === 0 && (
+            <div className="md:col-span-2 surface-card rounded-[30px] p-10 text-center">
+              <p className="text-lg font-semibold">Không tìm thấy mẫu ngữ pháp phù hợp</p>
+              <p className="text-soft mt-2">Hãy thử tìm theo ý nghĩa tiếng Việt hoặc ký hiệu ngữ pháp.</p>
             </div>
           )}
-        </div>
-
+        </section>
       </div>
     </div>
   );
