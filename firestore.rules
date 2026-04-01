@@ -60,7 +60,11 @@ service cloud.firestore {
       return hasOnlyAllowedFields([
                'kanji',
                'meaning',
+               'meaningVi',
+               'meaningEn',
                'meanings',
+               'meaningsVi',
+               'meaningsEn',
                'level',
                'onyomi',
                'kunyomi',
@@ -74,7 +78,11 @@ service cloud.firestore {
              data.kanji is string && data.kanji.size() > 0 && data.kanji.size() < 10 &&
              data.meaning is string && data.meaning.size() > 0 && data.meaning.size() < 200 &&
              data.level in ['N5', 'N4', 'N3', 'N2', 'N1'] &&
+             (!('meaningVi' in data) || data.meaningVi is string) &&
+             (!('meaningEn' in data) || data.meaningEn is string) &&
              (!('meanings' in data) || data.meanings is list) &&
+             (!('meaningsVi' in data) || data.meaningsVi is list) &&
+             (!('meaningsEn' in data) || data.meaningsEn is list) &&
              (!('readings' in data) || data.readings is map) &&
              (!('meta' in data) || data.meta is map) &&
              (!('examples' in data) || data.examples is list) &&

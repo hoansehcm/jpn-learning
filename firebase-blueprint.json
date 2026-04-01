@@ -69,7 +69,17 @@
       "type": "object",
       "properties": {
         "kanji": { "type": "string" },
+        "meaningVi": { "type": "string" },
+        "meaningEn": { "type": "string" },
         "meanings": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "meaningsVi": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "meaningsEn": {
           "type": "array",
           "items": { "type": "string" }
         },
@@ -123,6 +133,7 @@
               "word": { "type": "string" },
               "reading": { "type": "string" },
               "meaning": { "type": "string" },
+              "meaningEn": { "type": "string" },
               "priorities": {
                 "type": "array",
                 "items": { "type": "string" }

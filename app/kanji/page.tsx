@@ -13,7 +13,7 @@ const getPreviewText = (item: KanjiItem) => {
   if (vocab) {
     return {
       title: vocab.word,
-      subtitle: [vocab.reading, vocab.meaning].filter(Boolean).join(' • '),
+      subtitle: [vocab.reading, vocab.meaning].filter(Boolean).join(' \u2022 '),
     };
   }
 
@@ -47,7 +47,7 @@ export default function KanjiList() {
         setLoading(false);
       })
       .catch((err) => {
-        console.error('Loi khi tai du lieu Kanji:', err);
+        console.error('L\u1ed7i khi t\u1ea3i d\u1eef li\u1ec7u Kanji:', err);
         setLoading(false);
       });
   }, []);
@@ -61,7 +61,8 @@ export default function KanjiList() {
         query.length === 0 ||
         item.kanji.includes(query) ||
         item.searchableText.includes(query) ||
-        item.meaning.toLowerCase().includes(query);
+        item.meaning.toLowerCase().includes(query) ||
+        item.meaningEn.toLowerCase().includes(query);
 
       return matchesLevel && matchesSearch;
     });
@@ -72,10 +73,9 @@ export default function KanjiList() {
       <div className="mx-auto max-w-6xl space-y-6">
         <section className="rounded-[40px] border border-border bg-card p-6 text-card-foreground shadow-sm sm:p-8 lg:p-10">
           <p className="text-sm uppercase tracking-[0.22em] text-muted-foreground">Kanji Reference</p>
-          <h1 className="mt-3 font-serif text-4xl font-bold sm:text-5xl">Thu vien Kanji chi tiet</h1>
+          <h1 className="mt-3 font-serif text-4xl font-bold sm:text-5xl">Th\u01b0 vi\u1ec7n Kanji chi ti\u1ebft</h1>
           <p className="mt-4 max-w-3xl leading-7 text-muted-foreground">
-            Du lieu moi tach ro am On, am Kun, nghia, thong tin co ban va tu vung vi du cho tung chu. Ban co
-            the tim theo kanji, am doc, nghia hoac tu vi du.
+            D\u1eef li\u1ec7u Kanji gi\u1edd c\u00f3 \u00e2m On, \u00e2m Kun, ngh\u0129a ti\u1ebfng Vi\u1ec7t, ngh\u0129a g\u1ed1c ti\u1ebfng Anh v\u00e0 t\u1eeb v\u1ef1ng v\u00ed d\u1ee5 cho t\u1eebng ch\u1eef.
           </p>
         </section>
 
@@ -85,7 +85,7 @@ export default function KanjiList() {
               <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Tim: 学, がく, hoc, 日本, 学校..."
+                placeholder="T\u00ecm: \u5b66, \u304c\u304f, h\u1ecdc, school, \u65e5\u672c..."
                 value={searchTerm}
                 onChange={(event) => {
                   setSearchTerm(event.target.value);
@@ -109,7 +109,7 @@ export default function KanjiList() {
                       : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                   }`}
                 >
-                  {level === 'All' ? 'Tat ca' : level}
+                  {level === 'All' ? 'T\u1ea5t c\u1ea3' : level}
                 </button>
               ))}
             </div>
@@ -119,7 +119,7 @@ export default function KanjiList() {
         {loading ? (
           <div className="flex flex-col items-center justify-center gap-3 py-20">
             <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-            <p className="font-medium text-muted-foreground">Dang tai thu vien Kanji...</p>
+            <p className="font-medium text-muted-foreground">\u0110ang t\u1ea3i th\u01b0 vi\u1ec7n Kanji...</p>
           </div>
         ) : (
           <>
@@ -139,14 +139,15 @@ export default function KanjiList() {
                       <span className="rounded-full border border-emerald-200 bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-400">
                         {item.level}
                       </span>
-                      <span className="text-xs text-muted-foreground">{item.meta.strokeCount} net</span>
+                      <span className="text-xs text-muted-foreground">{item.meta.strokeCount} n\u00e9t</span>
                     </div>
 
                     <div className="mt-6 rounded-[28px] border border-border/50 bg-secondary/50 py-8 text-center">
                       <p className="font-serif text-7xl leading-none text-foreground">{item.kanji}</p>
                     </div>
 
-                    <p className="mt-5 flex-grow text-xl font-bold text-foreground">{item.meaning}</p>
+                    <p className="mt-5 text-xl font-bold text-foreground">{item.meaning}</p>
+                    {item.meaningEn && <p className="mt-1 text-sm text-muted-foreground">{item.meaningEn}</p>}
 
                     <div className="mt-4 space-y-2 text-sm">
                       <div className="flex items-start justify-between gap-3 border-b border-border/50 pb-2">
@@ -167,7 +168,7 @@ export default function KanjiList() {
                     )}
 
                     <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                      <span>{item.exampleVocabulary.length} tu vi du</span>
+                      <span>{item.exampleVocabulary.length} t\u1eeb v\u00ed d\u1ee5</span>
                       <span>{item.readings.nanori.length} nanori</span>
                     </div>
 
@@ -175,7 +176,7 @@ export default function KanjiList() {
                       href={`/kanji/${item.id}`}
                       className="mt-5 inline-flex items-center gap-2 font-semibold text-emerald-600 transition-colors hover:text-emerald-700 dark:text-emerald-500"
                     >
-                      Xem chi tiet
+                      Xem chi ti\u1ebft
                       <ChevronRight className="h-4 w-4" />
                     </Link>
                   </motion.div>
@@ -185,8 +186,8 @@ export default function KanjiList() {
               {kanjiList.length === 0 && (
                 <div className="rounded-[30px] border border-border bg-card p-10 text-center sm:col-span-2 lg:col-span-3 xl:col-span-4">
                   <GraduationCap className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                  <p className="text-xl font-semibold text-foreground">Khong tim thay Kanji phu hop</p>
-                  <p className="mt-2 text-muted-foreground">Thu tim theo am doc, nghia hoac tu vung vi du.</p>
+                  <p className="text-xl font-semibold text-foreground">Kh\u00f4ng t\u00ecm th\u1ea5y Kanji ph\u00f9 h\u1ee3p</p>
+                  <p className="mt-2 text-muted-foreground">Th\u1eed t\u00ecm theo \u00e2m \u0111\u1ecdc, ngh\u0129a ti\u1ebfng Vi\u1ec7t ho\u1eb7c ngh\u0129a ti\u1ebfng Anh.</p>
                 </div>
               )}
             </section>
@@ -197,7 +198,7 @@ export default function KanjiList() {
                   onClick={() => setVisibleCount((value) => value + 40)}
                   className="rounded-full bg-emerald-600 px-8 py-3.5 font-medium text-white shadow-md transition-all hover:bg-emerald-700 focus:ring-4 focus:ring-emerald-500/20 active:scale-95"
                 >
-                  Tai them ({visibleCount} / {kanjiList.length})
+                  T\u1ea3i th\u00eam ({visibleCount} / {kanjiList.length})
                 </button>
               </div>
             )}

@@ -2,10 +2,13 @@ import fs from 'fs';
 import path from 'path';
 
 const API_BASE = 'https://kanjiapi.dev/v1';
+const GOOGLE_TRANSLATE_ENDPOINT = 'https://translation.googleapis.com/language/translate/v2';
 const OUTPUT_PATH = path.join(process.cwd(), 'public', 'data', 'kanji_data.json');
 const EXISTING_PATH = OUTPUT_PATH;
 const DEFAULT_LIMIT = 500;
 const BATCH_SIZE = 12;
+const JAPANESE_COMMA = '\u3001';
+const EM_DASH = '\u2014';
 
 const normalizeLevel = (value, fallback = 'N5') => {
   const raw = Array.isArray(value) ? value[0] : value;
@@ -17,13 +20,12 @@ const normalizeLevel = (value, fallback = 'N5') => {
   return fallback;
 };
 
-const toListString = (items) => (items.length > 0 ? items.join('、') : '—');
+const toListString = (items) => (items.length > 0 ? items.join(JAPANESE_COMMA) : EM_DASH);
 
 const scoreGloss = (glosses) => {
   const combined = glosses.join(' ').toLowerCase();
   let score = 0;
 
-  if (/\b(ichi1|news1|nf\d+|spec1|gai1)\b/.test(combined)) score += 1;
   if (!combined.includes('(abbr)')) score += 2;
   if (!combined.includes('(former)')) score += 2;
   if (!combined.includes('(place)')) score += 1;
@@ -64,12 +66,83 @@ const dedupe = (items, getKey) => {
   return results;
 };
 
+const decodeHtmlEntities = (input) =>
+  input
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+
+const translateCache = new Map();
+
+const translateTextsToVietnamese = async (texts) => {
+  const apiKey = process.env.GOOGLE_TRANSLATE_API_KEY;
+  const sanitizedTexts = texts.map((text) => text.trim()).filter(Boolean);
+
+  if (!apiKey || sanitizedTexts.length === 0) {
+    return [];
+  }
+
+  const results = new Array(sanitizedTexts.length);
+  const uncachedTexts = [];
+  const uncachedIndexes = [];
+
+  sanitizedTexts.forEach((text, index) => {
+    const cacheKey = `en::vi::${text}`;
+    if (translateCache.has(cacheKey)) {
+      results[index] = translateCache.get(cacheKey);
+      return;
+    }
+
+    uncachedTexts.push(text);
+    uncachedIndexes.push(index);
+  });
+
+  if (uncachedTexts.length > 0) {
+    const body = new URLSearchParams();
+    body.set('target', 'vi');
+    body.set('source', 'en');
+    body.set('format', 'text');
+
+    for (const text of uncachedTexts) {
+      body.append('q', text);
+    }
+
+    const response = await fetch(`${GOOGLE_TRANSLATE_ENDPOINT}?key=${encodeURIComponent(apiKey)}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+      },
+      body: body.toString(),
+    });
+
+    const payload = await response.json();
+
+    if (!response.ok) {
+      throw new Error(payload?.error?.message || 'Google Translate request failed');
+    }
+
+    const translated = (payload?.data?.translations || []).map((item) => decodeHtmlEntities(item?.translatedText || ''));
+
+    translated.forEach((text, position) => {
+      const original = uncachedTexts[position];
+      const resultIndex = uncachedIndexes[position];
+      const cacheKey = `en::vi::${original}`;
+      translateCache.set(cacheKey, text);
+      results[resultIndex] = text;
+    });
+  }
+
+  return results.map((item, index) => item || sanitizedTexts[index]);
+};
+
 const selectExampleVocabulary = (kanji, wordsPayload, legacyExamples = []) => {
   const candidates = [];
 
   for (const entry of Array.isArray(wordsPayload) ? wordsPayload : []) {
     const glosses = (entry.meanings || []).flatMap((meaning) => meaning.glosses || []).filter(Boolean);
-    const compactMeaning = glosses.slice(0, 2).join('; ');
+    const compactMeaningEn = glosses.slice(0, 2).join('; ');
 
     for (const variant of entry.variants || []) {
       if (!variant?.written || !variant.written.includes(kanji)) continue;
@@ -77,7 +150,7 @@ const selectExampleVocabulary = (kanji, wordsPayload, legacyExamples = []) => {
       candidates.push({
         word: variant.written,
         reading: variant.pronounced || '',
-        meaning: compactMeaning,
+        meaningEn: compactMeaningEn,
         priorities: Array.isArray(variant.priorities) ? variant.priorities : [],
         score: scoreVocabulary(variant, kanji, glosses),
       });
@@ -101,6 +174,7 @@ const selectExampleVocabulary = (kanji, wordsPayload, legacyExamples = []) => {
       .map((example) => ({
         word: example.ja,
         reading: '',
+        meaningEn: '',
         meaning: example.vi || '',
         priorities: [],
       })),
@@ -113,7 +187,7 @@ const readExistingDataset = () => {
 
   try {
     return JSON.parse(fs.readFileSync(EXISTING_PATH, 'utf8'));
-  } catch (error) {
+  } catch {
     console.warn('Khong doc duoc dataset cu, se build moi tu dau.');
     return [];
   }
@@ -137,6 +211,29 @@ const fetchJson = async (url) => {
   return response.json();
 };
 
+const enrichVocabularyTranslations = async (exampleVocabulary) => {
+  const meaningsToTranslate = exampleVocabulary.map((item) => item.meaningEn || '').filter(Boolean);
+  const translated = await translateTextsToVietnamese(meaningsToTranslate);
+  let translatedIndex = 0;
+
+  return exampleVocabulary.map((item) => {
+    if (!item.meaningEn) {
+      return {
+        ...item,
+        meaning: item.meaning || '',
+      };
+    }
+
+    const meaning = translated[translatedIndex] || item.meaning || item.meaningEn;
+    translatedIndex += 1;
+
+    return {
+      ...item,
+      meaning,
+    };
+  });
+};
+
 const buildKanjiItem = async (baseItem) => {
   const [detail, words] = await Promise.all([
     fetchJson(`${API_BASE}/kanji/${encodeURIComponent(baseItem.kanji)}`),
@@ -149,15 +246,23 @@ const buildKanjiItem = async (baseItem) => {
     nanori: Array.isArray(detail.name_readings) ? detail.name_readings : [],
   };
 
-  const meanings = Array.isArray(detail.meanings) && detail.meanings.length > 0 ? detail.meanings : [baseItem.meaning].filter(Boolean);
+  const meaningsEn = Array.isArray(detail.meanings) && detail.meanings.length > 0 ? detail.meanings : [];
+  const meaningsVi = await translateTextsToVietnamese(meaningsEn);
   const level = detail.jlpt ? `N${detail.jlpt}` : normalizeLevel(baseItem.level, 'N5');
-  const exampleVocabulary = selectExampleVocabulary(baseItem.kanji, words, baseItem.examples || []);
+  const exampleVocabularyRaw = selectExampleVocabulary(baseItem.kanji, words, baseItem.examples || []);
+  const exampleVocabulary = await enrichVocabularyTranslations(exampleVocabularyRaw);
+  const meaningEn = meaningsEn[0] || baseItem.meaningEn || '';
+  const meaningVi = baseItem.meaningVi || meaningsVi[0] || baseItem.meaning || meaningEn || 'Chua co nghia';
 
   return {
     id: baseItem.id || `K_${baseItem.kanji}`,
     kanji: baseItem.kanji,
-    meaning: baseItem.meaning || meanings.slice(0, 3).join(', '),
-    meanings,
+    meaning: meaningVi,
+    meaningVi,
+    meaningEn,
+    meanings: meaningsEn,
+    meaningsEn,
+    meaningsVi,
     level,
     onyomi: toListString(readings.onyomi),
     kunyomi: toListString(readings.kunyomi),
@@ -174,12 +279,14 @@ const buildKanjiItem = async (baseItem) => {
     exampleVocabulary,
     searchableText: [
       baseItem.kanji,
-      baseItem.meaning || '',
-      ...meanings,
+      meaningVi,
+      meaningEn,
+      ...meaningsEn,
+      ...(meaningsVi.length > 0 ? meaningsVi : [meaningVi]),
       ...readings.onyomi,
       ...readings.kunyomi,
       ...readings.nanori,
-      ...exampleVocabulary.flatMap((example) => [example.word, example.reading, example.meaning]),
+      ...exampleVocabulary.flatMap((example) => [example.word, example.reading, example.meaning, example.meaningEn || '']),
     ]
       .filter(Boolean)
       .join(' ')
@@ -200,6 +307,8 @@ async function rebuildKanjiDataset() {
       id: `K_${kanji}`,
       kanji,
       meaning: '',
+      meaningVi: '',
+      meaningEn: '',
       level: 'N5',
       strokeCount: 0,
       examples: [],
@@ -209,6 +318,12 @@ async function rebuildKanjiDataset() {
   }
 
   console.log(`Dang rebuild ${seedItems.length} kanji vao ${OUTPUT_PATH}`);
+
+  if (process.env.GOOGLE_TRANSLATE_API_KEY) {
+    console.log('Google Translate: ON');
+  } else {
+    console.log('Google Translate: OFF (missing GOOGLE_TRANSLATE_API_KEY)');
+  }
 
   const results = [];
 
@@ -228,11 +343,15 @@ async function rebuildKanjiDataset() {
       results.push({
         id: seed.id || `K_${seed.kanji}`,
         kanji: seed.kanji,
-        meaning: seed.meaning || 'Chua co nghia',
-        meanings: seed.meaning ? [seed.meaning] : [],
+        meaning: seed.meaningVi || seed.meaning || 'Chua co nghia',
+        meaningVi: seed.meaningVi || seed.meaning || 'Chua co nghia',
+        meaningEn: seed.meaningEn || '',
+        meanings: Array.isArray(seed.meaningsEn) ? seed.meaningsEn : [],
+        meaningsEn: Array.isArray(seed.meaningsEn) ? seed.meaningsEn : [],
+        meaningsVi: Array.isArray(seed.meaningsVi) ? seed.meaningsVi : [],
         level: normalizeLevel(seed.level, 'N5'),
-        onyomi: seed.onyomi || '—',
-        kunyomi: seed.kunyomi || '—',
+        onyomi: seed.onyomi || EM_DASH,
+        kunyomi: seed.kunyomi || EM_DASH,
         readings: {
           onyomi: [],
           kunyomi: [],
@@ -247,8 +366,8 @@ async function rebuildKanjiDataset() {
         },
         strokeCount: Number(seed.strokeCount || 0),
         examples: Array.isArray(seed.examples) ? seed.examples : [],
-        exampleVocabulary: [],
-        searchableText: `${seed.kanji} ${seed.meaning || ''}`.trim().toLowerCase(),
+        exampleVocabulary: Array.isArray(seed.exampleVocabulary) ? seed.exampleVocabulary : [],
+        searchableText: `${seed.kanji} ${seed.meaningVi || seed.meaning || ''} ${seed.meaningEn || ''}`.trim().toLowerCase(),
       });
     });
 
