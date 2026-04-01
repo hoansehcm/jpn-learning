@@ -69,10 +69,41 @@
       "type": "object",
       "properties": {
         "kanji": { "type": "string" },
-        "onyomi": { "type": "string" },
-        "kunyomi": { "type": "string" },
+        "meanings": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
         "meaning": { "type": "string" },
         "level": { "type": "string", "enum": ["N5", "N4", "N3", "N2", "N1"] },
+        "onyomi": { "type": "string" },
+        "kunyomi": { "type": "string" },
+        "readings": {
+          "type": "object",
+          "properties": {
+            "onyomi": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "kunyomi": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "nanori": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "strokeCount": { "type": "number" },
+            "grade": { "type": ["number", "null"] },
+            "jlpt": { "type": ["number", "null"] },
+            "frequency": { "type": ["number", "null"] },
+            "unicode": { "type": "string" }
+          }
+        },
         "strokeCount": { "type": "number" },
         "examples": {
           "type": "array",
@@ -83,9 +114,25 @@
               "vi": { "type": "string" }
             }
           }
-        }
+        },
+        "exampleVocabulary": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "word": { "type": "string" },
+              "reading": { "type": "string" },
+              "meaning": { "type": "string" },
+              "priorities": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        },
+        "searchableText": { "type": "string" }
       },
-      "required": ["kanji", "meaning", "level"]
+      "required": ["kanji", "meaning", "meanings", "level", "readings", "meta"]
     },
     "SavedItem": {
       "title": "SavedItem",

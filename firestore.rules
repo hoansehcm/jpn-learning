@@ -57,10 +57,29 @@ service cloud.firestore {
     }
 
     function isValidKanji(data) {
-      return hasOnlyAllowedFields(['kanji', 'onyomi', 'kunyomi', 'meaning', 'level', 'strokeCount', 'examples']) &&
+      return hasOnlyAllowedFields([
+               'kanji',
+               'meaning',
+               'meanings',
+               'level',
+               'onyomi',
+               'kunyomi',
+               'readings',
+               'meta',
+               'strokeCount',
+               'examples',
+               'exampleVocabulary',
+               'searchableText'
+             ]) &&
              data.kanji is string && data.kanji.size() > 0 && data.kanji.size() < 10 &&
              data.meaning is string && data.meaning.size() > 0 && data.meaning.size() < 200 &&
-             data.level in ['N5', 'N4', 'N3', 'N2', 'N1'];
+             data.level in ['N5', 'N4', 'N3', 'N2', 'N1'] &&
+             (!('meanings' in data) || data.meanings is list) &&
+             (!('readings' in data) || data.readings is map) &&
+             (!('meta' in data) || data.meta is map) &&
+             (!('examples' in data) || data.examples is list) &&
+             (!('exampleVocabulary' in data) || data.exampleVocabulary is list) &&
+             (!('searchableText' in data) || data.searchableText is string);
     }
 
     function isValidSavedItem(data) {

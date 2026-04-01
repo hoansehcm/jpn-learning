@@ -10,7 +10,7 @@
  */
 
 import { db } from './firebase';
-import { collection, doc, setDoc, writeBatch } from 'firebase/firestore';
+import { collection, doc, writeBatch } from 'firebase/firestore';
 
 // --- JMdict (Vocabulary) ---
 export interface JMdictEntry {
@@ -57,7 +57,10 @@ export interface KanjidicEntry {
   meanings: string[];
   onyomi: string[];
   kunyomi: string[];
+  nanori?: string[];
   jlpt?: string;
+  freq?: number;
+  unicode?: string;
 }
 
 export const importKanjidic = async (entries: KanjidicEntry[]) => {
@@ -70,12 +73,25 @@ export const importKanjidic = async (entries: KanjidicEntry[]) => {
     const docRef = doc(kanjiRef, entry.kanji); // Use kanji character as ID
     batch.set(docRef, {
       kanji: entry.kanji,
-      grade: entry.grade,
-      strokeCount: entry.strokeCount,
+      meaning: entry.meanings[0] || '',
       meanings: entry.meanings,
-      onyomi: entry.onyomi,
-      kunyomi: entry.kunyomi,
-      jlpt: entry.jlpt || 'Unknown',
+      level: entry.jlpt || 'N1',
+      onyomi: entry.onyomi.join('、'),
+      kunyomi: entry.kunyomi.join('、'),
+      readings: {
+        onyomi: entry.onyomi,
+        kunyomi: entry.kunyomi,
+        nanori: entry.nanori || [],
+      },
+      meta: {
+        grade: entry.grade,
+        strokeCount: entry.strokeCount,
+        jlpt: entry.jlpt ? Number(entry.jlpt.replace('N', '')) : null,
+        frequency: entry.freq || null,
+        unicode: entry.unicode || '',
+      },
+      strokeCount: entry.strokeCount,
+      jlpt: entry.jlpt || null,
       source: 'KANJIDIC2',
       updatedAt: new Date().toISOString()
     });
