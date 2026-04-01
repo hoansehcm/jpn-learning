@@ -96,33 +96,42 @@ export default function KanjiDetail() {
   }
 
   return (
-    <div className="px-4 pb-16 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background px-4 pb-16 text-foreground sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl space-y-6">
-        <button onClick={() => router.back()} className="inline-flex items-center gap-2 text-soft hover:text-[var(--text-color)]">
+        <button
+          onClick={() => router.back()}
+          className="inline-flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+        >
           <ArrowLeft className="h-4 w-4" />
           Quay lại danh sách
         </button>
 
-        <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="surface-panel overflow-hidden rounded-[40px]">
-          <div className="bg-[linear-gradient(135deg,#0f9f6e,#065f46)] p-8 text-white sm:p-10">
+        <motion.section
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="overflow-hidden rounded-[40px] border border-border bg-card shadow-sm"
+        >
+          <div className="border-b border-border bg-[linear-gradient(135deg,#0f9f6e,#065f46)] p-8 text-white sm:p-10">
             <div className="grid items-center gap-8 md:grid-cols-[220px_1fr]">
-              <div className="flex h-[220px] items-center justify-center rounded-[36px] bg-white font-serif text-[120px] text-emerald-700 shadow-xl">
+              <div className="flex h-[220px] items-center justify-center rounded-[36px] bg-white font-serif text-[120px] text-emerald-700 shadow-xl dark:bg-emerald-950 dark:text-emerald-400">
                 {kanji.kanji}
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <span className="rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">{kanji.level}</span>
-                  <span className="text-white/80">{kanji.strokeCount} nét</span>
+                  <span className="rounded-full bg-white/20 px-3 py-1 text-sm font-semibold text-white">
+                    {kanji.level}
+                  </span>
+                  <span className="font-medium text-white/80">{kanji.strokeCount} nét</span>
                 </div>
                 <h1 className="mt-5 text-4xl font-bold">{kanji.meaning}</h1>
-                <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-[24px] bg-white/10 p-4">
-                    <p className="text-sm text-white/70">Âm On</p>
-                    <p className="mt-2 text-xl font-semibold">{kanji.onyomi}</p>
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  <div className="rounded-[24px] bg-black/20 p-5 backdrop-blur-sm">
+                    <p className="text-sm font-medium text-white/70">Âm On</p>
+                    <p className="mt-2 text-2xl font-bold tracking-wide">{kanji.onyomi}</p>
                   </div>
-                  <div className="rounded-[24px] bg-white/10 p-4">
-                    <p className="text-sm text-white/70">Âm Kun</p>
-                    <p className="mt-2 text-xl font-semibold">{kanji.kunyomi}</p>
+                  <div className="rounded-[24px] bg-black/20 p-5 backdrop-blur-sm">
+                    <p className="text-sm font-medium text-white/70">Âm Kun</p>
+                    <p className="mt-2 text-2xl font-bold tracking-wide">{kanji.kunyomi}</p>
                   </div>
                 </div>
               </div>
@@ -132,24 +141,29 @@ export default function KanjiDetail() {
           <div className="p-8 sm:p-10">
             <KanjiStrokePlayer kanji={kanji.kanji} />
 
-            <div className="mb-6 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
-                <GraduationCap className="h-5 w-5" />
+            <div className="mt-10 mb-6 flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
+                <GraduationCap className="h-6 w-6" />
               </div>
-              <p className="font-semibold">Từ vựng chứa chữ này</p>
+              <h2 className="text-2xl font-bold">Từ vựng chứa chữ này</h2>
             </div>
 
             {kanji.examples.length > 0 ? (
-              <div className="mt-6 grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-2">
                 {kanji.examples.map((example, index) => (
-                  <div key={`${kanji.id}-${index}`} className="rounded-[28px] bg-black/5 p-5">
-                    <p className="text-2xl font-semibold">{example.ja}</p>
-                    <p className="mt-3 text-soft">{example.vi}</p>
+                  <div
+                    key={`${kanji.id}-${index}`}
+                    className="flex flex-col rounded-[28px] border border-border/50 bg-secondary/50 p-6 transition-colors hover:bg-secondary"
+                  >
+                    <p className="text-2xl font-bold text-foreground">{example.ja}</p>
+                    <p className="mt-3 text-base text-muted-foreground">{example.vi}</p>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="mt-6 rounded-[28px] bg-black/5 p-5 text-soft">Chưa có ví dụ cho chữ này.</div>
+              <div className="rounded-[28px] border border-border/50 bg-secondary/50 p-8 text-center">
+                <p className="text-lg text-muted-foreground">Chưa có ví dụ cho chữ này.</p>
+              </div>
             )}
           </div>
         </motion.section>
